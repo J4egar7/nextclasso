@@ -60,7 +60,7 @@ function AboutPage({ setPage, goToProducts }) {
       </section>
 
       {/* MANIFESTO */}
-      <div style={{ background: "var(--about-accent)", padding: "100px 8vw", textAlign: "center" }}>
+      <div style={{ background: "var(--about-accent)", padding: "clamp(48px, 10vw, 100px) 8vw", textAlign: "center" }}>
         <div style={{ fontFamily: "Bebas Neue", fontSize: "13px", letterSpacing: "5px", color: "var(--about-primary)", marginBottom: "24px" }}>
           OUR MANIFESTO
         </div>

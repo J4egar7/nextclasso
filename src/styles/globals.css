@@ -4323,3 +4323,38 @@ code {
   .dt-skinpanel-duo { flex-direction: column; }
   .dt-skinpanel-duo .dt-facepanel-main { height: 260px; }
 }
+
+/* ====================================================================
+   MOBILE-ONLY: general breathing-room + oversized-element pass.
+   Desktop is untouched — everything here lives inside this max-width
+   query only.
+   ==================================================================== */
+@media (max-width: 900px) {
+  /* Every section sitewide had 100px top/bottom padding even on the
+     narrowest phones — a big contributor to "too much empty space,
+     everything feels huge". */
+  .section { padding: 56px 6vw !important; }
+
+  /* About page "100% Authentic" etc. cards — these had desktop-sized
+     padding/icon/text at every screen width, so 2 cards alone filled
+     the screen on a phone. */
+  .values-grid { gap: 14px !important; }
+  .value-card { padding: 22px 18px !important; border-radius: 20px !important; }
+  .value-icon {
+    width: 48px !important; height: 48px !important;
+    border-radius: 16px !important;
+    font-size: 22px !important;
+    margin: 0 auto 12px !important;
+  }
+  .value-name { font-size: 16px !important; margin-bottom: 6px !important; }
+  .value-desc { font-size: 12.5px !important; line-height: 1.5 !important; }
+
+  /* Checkout/Orders nav had no dark-page treatment (unlike Makeup),
+     so the hamburger + nav background were dark-on-dark and nearly
+     invisible against the checkout page's dark theme. Mobile-only —
+     desktop's nav on these pages is untouched. */
+  .nav-onpage-checkout:not(.scrolled),
+  .nav-onpage-orders:not(.scrolled) {
+    background: rgba(5,20,15,0.85) !important;
+  }
+}

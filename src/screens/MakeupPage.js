@@ -309,7 +309,7 @@ function MakeupPage({ addToCart, goToProducts, toggleFavourite, isFav, openProdu
       </section>
 
       {/* MAKEUP MANIFESTO */}
-      <div style={{ background: "var(--make-light)", padding: "100px 8vw", textAlign: "center" }}>
+      <div style={{ background: "var(--make-light)", padding: "clamp(48px, 10vw, 100px) 8vw", textAlign: "center" }}>
         <div style={{ fontFamily: "Bebas Neue", fontSize: "13px", letterSpacing: "5px", color: "var(--make-primary)", marginBottom: "24px" }}>OUR MAKEUP PHILOSOPHY</div>
         <blockquote style={{ fontFamily: "Cormorant Garamond", fontSize: "clamp(24px,3.5vw,44px)", color: "var(--make-dark)", fontStyle: "italic", lineHeight: 1.4, maxWidth: "800px", margin: "0 auto 40px" }}>
           "Makeup isn't about hiding — it's about showing up as the most expressive, unapologetic version of yourself."

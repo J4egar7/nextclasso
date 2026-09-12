@@ -61,7 +61,7 @@ export default function Shell({ children }) {
 
       {/* NAV — hidden on admin routes */}
       {!isAdminRoute && (
-        <nav className={`nav ${scrolled ? "scrolled" : ""}`} style={{ background: navColor() }}>
+        <nav className={`nav nav-onpage-${page} ${scrolled ? "scrolled" : ""}`} style={{ background: navColor() }}>
           <div className="nav-logo" onClick={() => navigate("home")}>CLASO</div>
 
           <ul className="nav-links">
@@ -102,7 +102,7 @@ export default function Shell({ children }) {
           </div>
 
           <button
-            className={`nav-hamburger ${page === "makeup" && !scrolled ? "light" : ""}`}
+            className={`nav-hamburger ${(page === "makeup" || page === "checkout" || page === "orders") && !scrolled ? "light" : ""}`}
             onClick={() => setMobileMenuOpen(true)}
             aria-label="Open menu"
           >

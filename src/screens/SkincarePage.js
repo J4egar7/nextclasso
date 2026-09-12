@@ -281,7 +281,7 @@ function SkincarePage({ addToCart, goToProducts, toggleFavourite, isFav, openPro
       </section>
 
       {/* SKINCARE MANIFESTO */}
-      <div style={{ background: "var(--skin-accent)", padding: "100px 8vw", textAlign: "center" }}>
+      <div style={{ background: "var(--skin-accent)", padding: "clamp(48px, 10vw, 100px) 8vw", textAlign: "center" }}>
         <div style={{ fontFamily: "Bebas Neue", fontSize: "13px", letterSpacing: "5px", color: "var(--skin-primary)", marginBottom: "24px" }}>OUR SKINCARE PHILOSOPHY</div>
         <blockquote style={{ fontFamily: "Cormorant Garamond", fontSize: "clamp(24px,3.5vw,44px)", color: "var(--skin-dark)", fontStyle: "italic", lineHeight: 1.4, maxWidth: "800px", margin: "0 auto 40px" }}>
           "Great skin isn't born — it's built. With the right ingredients, the right routine, and a little patience."
