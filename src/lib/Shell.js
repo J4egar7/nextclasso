@@ -31,7 +31,11 @@ export default function Shell({ children }) {
   }, []);
 
   useEffect(() => {
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    // Instant, not smooth — a smooth animated scroll during a full page
+    // navigation is what caused the "zoomed in / white background"
+    // glitch on mobile (briefly showing the old scroll position while
+    // the new, differently-sized page renders underneath it).
+    window.scrollTo(0, 0);
   }, [pathname]);
 
   // Same admin-guard behaviour as before: going to "admin" without being

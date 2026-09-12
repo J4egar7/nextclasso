@@ -3701,7 +3701,7 @@ code {
      ================================================================ */
   .co2-page {
     min-height: 100vh;
-    background: linear-gradient(160deg, #0a0614 0%, #080610 40%, #0c0a18 100%);
+    background: linear-gradient(160deg, #051612 0%, #030f0c 40%, #061a15 100%);
     padding: 90px 0 100px;
     animation: fadeIn 0.4s ease both;
   }
@@ -3799,7 +3799,7 @@ code {
 
   /* Cards */
   .co2-card {
-    background: linear-gradient(160deg, #16102a 0%, #110d1e 100%);
+    background: linear-gradient(160deg, #0e2620 0%, #0a1d18 100%);
     border: 1px solid rgba(255,255,255,0.07);
     border-radius: 22px;
     padding: 28px 30px;
@@ -3953,7 +3953,7 @@ code {
 
   /* Summary column */
   .co2-summary {
-    background: linear-gradient(160deg, #16102a 0%, #110d1e 100%);
+    background: linear-gradient(160deg, #0e2620 0%, #0a1d18 100%);
     border: 1px solid rgba(255,255,255,0.08);
     border-radius: 22px; padding: 28px 28px;
     position: sticky; top: 96px;
@@ -4301,4 +4301,25 @@ code {
     font-size: 130px;
     min-height: 220px;
   }
+}
+
+/* ====================================================================
+   TWO "SEE IT ON SKIN" PANELS SIDE BY SIDE (desktop bestsellers only)
+   ==================================================================== */
+.dt-skinpanel-duo {
+  display: flex;
+  gap: 24px;
+  align-items: flex-start;
+}
+.dt-skinpanel-duo .dt-facepanel {
+  max-width: none;
+  flex: 1;
+  min-width: 0;
+}
+.dt-skinpanel-duo .dt-facepanel-main {
+  height: 300px;
+}
+@media (max-width: 1140px) {
+  .dt-skinpanel-duo { flex-direction: column; }
+  .dt-skinpanel-duo .dt-facepanel-main { height: 260px; }
 }

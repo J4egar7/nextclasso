@@ -129,11 +129,12 @@ function DesktopBestsellers({ addToCart, toggleFavourite, isFav, openProduct, st
   const CARDS_PER_PAGE = 4;
   const totalPages = Math.ceil(bestsellerProducts.length / CARDS_PER_PAGE);
 
-  const [pageIndex,   setPageIndex]   = useState(Math.min(startPage, Math.max(0, totalPages - 1)));
-  const [activeIdx,   setActiveIdx]   = useState(0); // which card in the current page is highlighted
-  const [galleryTab,  setGalleryTab]  = useState(0);
-  const [isPaused,    setIsPaused]    = useState(false);
-  const [progress,    setProgress]    = useState(0);
+  const [pageIndex,    setPageIndex]    = useState(Math.min(startPage, Math.max(0, totalPages - 1)));
+  const [subPairIndex, setSubPairIndex] = useState(0); // 0 = cards [0,1] shown in the panels, 1 = cards [2,3]
+  const [galleryTabA,  setGalleryTabA]  = useState(0);
+  const [galleryTabB,  setGalleryTabB]  = useState(0);
+  const [isPaused,     setIsPaused]     = useState(false);
+  const [progress,     setProgress]     = useState(0);
   const resumeTimeout = useRef(null);
 
   const pauseAuto = () => {
@@ -143,7 +144,8 @@ function DesktopBestsellers({ addToCart, toggleFavourite, isFav, openProduct, st
   };
   useEffect(() => () => { if (resumeTimeout.current) clearTimeout(resumeTimeout.current); }, []);
 
-  // Auto-advance: cycle through cards on the current page, then move to next page
+  // Auto-advance: show the first pair of 2, then the second pair of 2,
+  // then move to the next page of 4 and start over.
   useEffect(() => {
     if (isPaused) return;
     setProgress(0);
@@ -154,28 +156,27 @@ function DesktopBestsellers({ addToCart, toggleFavourite, isFav, openProduct, st
       setProgress(pct);
       if (pct >= 1) {
         clearInterval(id);
-        const pageProducts = bestsellerProducts.slice(pageIndex * CARDS_PER_PAGE, pageIndex * CARDS_PER_PAGE + CARDS_PER_PAGE);
-        if (activeIdx < pageProducts.length - 1) {
-          setActiveIdx(i => i + 1);
+        if (subPairIndex === 0) {
+          setSubPairIndex(1);
         } else {
-          setActiveIdx(0);
+          setSubPairIndex(0);
           setPageIndex(i => (i + 1) % totalPages);
         }
       }
     }, PROGRESS_TICK_MS);
     return () => clearInterval(id);
-  }, [isPaused, activeIdx, pageIndex, totalPages]);
+  }, [isPaused, subPairIndex, pageIndex, totalPages]);
 
-  useEffect(() => { setGalleryTab(0); }, [pageIndex]);
+  useEffect(() => { setGalleryTabA(0); setGalleryTabB(0); }, [pageIndex, subPairIndex]);
 
-  const goToPage = (i) => { pauseAuto(); setPageIndex(i); setActiveIdx(0); };
-  const goPrev = () => { pauseAuto(); setPageIndex(i => (i - 1 + totalPages) % totalPages); setActiveIdx(0); };
-  const goNext = () => { pauseAuto(); setPageIndex(i => (i + 1) % totalPages); setActiveIdx(0); };
+  const goToPage = (i) => { pauseAuto(); setPageIndex(i); setSubPairIndex(0); };
+  const goPrev = () => { pauseAuto(); setPageIndex(i => (i - 1 + totalPages) % totalPages); setSubPairIndex(0); };
+  const goNext = () => { pauseAuto(); setPageIndex(i => (i + 1) % totalPages); setSubPairIndex(0); };
 
-  const activeProduct = bestsellerProducts[pageIndex * CARDS_PER_PAGE + activeIdx]
-    || bestsellerProducts[pageIndex * CARDS_PER_PAGE];
   const ringPct = isPaused ? 0 : Math.round(progress * 100);
   const pageProducts = bestsellerProducts.slice(pageIndex * CARDS_PER_PAGE, pageIndex * CARDS_PER_PAGE + CARDS_PER_PAGE);
+  const panelProductA = pageProducts[subPairIndex * 2]     || pageProducts[0];
+  const panelProductB = pageProducts[subPairIndex * 2 + 1] || pageProducts[1];
 
   return (
     <div className="dt-bestsellers">
@@ -186,14 +187,14 @@ function DesktopBestsellers({ addToCart, toggleFavourite, isFav, openProduct, st
           <div className="dt-carousel-track">
             <div className="dt-cards-grid">
               {pageProducts.map((p, idx) => {
-                const isActive = idx === activeIdx;
+                const isActive = Math.floor(idx / 2) === subPairIndex;
                 return (
                   <div key={p.id} className="dt-card-wrap">
                     {/* Progress ring indicator */}
                     <button
                       className={`mb-display-indicator ${isActive ? "active" : ""}`}
                       style={isActive ? { "--ring-pct": `${ringPct}%` } : undefined}
-                      onClick={(e) => { e.stopPropagation(); pauseAuto(); setActiveIdx(idx); }}
+                      onClick={(e) => { e.stopPropagation(); pauseAuto(); setSubPairIndex(Math.floor(idx / 2)); }}
                       aria-label={`Preview ${p.name}`}
                     >
                       <span className="mb-display-indicator-dot">{isActive ? "👁" : "○"}</span>
@@ -244,15 +245,24 @@ function DesktopBestsellers({ addToCart, toggleFavourite, isFav, openProduct, st
         </div>
       </div>
 
-      {/* RIGHT: sticky skin panel */}
+      {/* RIGHT: two "See it on skin" panels side by side, showing the current pair */}
       <div className="dt-panel-col">
-        <SkinPanel
-          product={activeProduct}
-          galleryTab={galleryTab}
-          setGalleryTab={setGalleryTab}
-          onInteract={pauseAuto}
-          isMobile={false}
-        />
+        <div className="dt-skinpanel-duo">
+          <SkinPanel
+            product={panelProductA}
+            galleryTab={galleryTabA}
+            setGalleryTab={setGalleryTabA}
+            onInteract={pauseAuto}
+            isMobile={false}
+          />
+          <SkinPanel
+            product={panelProductB}
+            galleryTab={galleryTabB}
+            setGalleryTab={setGalleryTabB}
+            onInteract={pauseAuto}
+            isMobile={false}
+          />
+        </div>
       </div>
     </div>
   );
@@ -528,31 +538,6 @@ function HomePage({ setPage, goToProducts, addToCart, toggleFavourite, isFav, op
           <div className="banner-emoji">💄</div>
         </div>
       </div>
-
-      {/* MORE BESTSELLERS — duplicate of the section above, further down the page */}
-      <section className="section section-home">
-        <div className="section-header">
-          <div>
-            <div className="section-eyebrow">✦ Customer Favourites</div>
-            <h2 className="section-title">More to <em>discover</em></h2>
-          </div>
-        </div>
-
-        <DesktopBestsellers
-          addToCart={addToCart}
-          toggleFavourite={toggleFavourite}
-          isFav={isFav}
-          openProduct={openProduct}
-          startPage={1}
-        />
-
-        <MobileBestsellers
-          addToCart={addToCart}
-          toggleFavourite={toggleFavourite}
-          isFav={isFav}
-          openProduct={openProduct}
-        />
-      </section>
 
       {/* PARALLAX TEXT BAND */}
       <div className="parallax-text-section" style={{ position: "relative" }}>
