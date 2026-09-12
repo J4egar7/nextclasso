@@ -9,6 +9,7 @@ function CheckoutPage({ setPage, cart, updateCartQty, removeFromCart, cartTotal,
   const [confirmationResult, setConfirmationResult] = useState(null);
   const [sendingOtp, setSendingOtp] = useState(false);
   const [verifyingOtp, setVerifyingOtp] = useState(false);
+  const [placedOrder, setPlacedOrder] = useState(null); // snapshot of the order — survives the cart being cleared
   const fmt = (n) => "PKR " + n.toLocaleString("en-PK");
 
   const getTheme = (item) => {
@@ -58,7 +59,7 @@ function CheckoutPage({ setPage, cart, updateCartQty, removeFromCart, cartTotal,
     } catch (err) {
       console.error(err);
       if (err.code === "auth/operation-not-allowed" || err.code === "auth/invalid-api-key") {
-        placeOrder();
+        setPlacedOrder(placeOrder());
         setStep("success");
       } else {
         setOtpError("Could not send OTP. Please check your number and try again.");
@@ -74,7 +75,7 @@ function CheckoutPage({ setPage, cart, updateCartQty, removeFromCart, cartTotal,
 
     try {
       await confirmationResult.confirm(otpCode);
-      placeOrder();
+      setPlacedOrder(placeOrder());
       setStep("success");
     } catch (err) {
       setOtpError("Wrong code. Please check the SMS and try again.");
@@ -87,7 +88,13 @@ function CheckoutPage({ setPage, cart, updateCartQty, removeFromCart, cartTotal,
   const itemCount        = cart.reduce((s, i) => s + i.qty, 0);
 
   // ── SUCCESS ──────────────────────────────────────────────────────────────────
-  if (step === "success") return (
+  if (step === "success") {
+    // Use the snapshot taken at the moment of placing the order — by now
+    // the live cart has already been cleared, so reading from `cart`/
+    // `cartTotal` here would show 0 items / PKR 0.
+    const orderItemCount = placedOrder ? placedOrder.items.reduce((s, i) => s + i.qty, 0) : itemCount;
+    const orderTotal     = placedOrder ? placedOrder.total : totalWithDelivery;
+    return (
     <div className="co2-page">
       <div className="co2-success">
         <div className="co2-success-ring">
@@ -100,16 +107,22 @@ function CheckoutPage({ setPage, cart, updateCartQty, removeFromCart, cartTotal,
           We'll call you on <strong>{form.phone}</strong> to confirm.
         </p>
         <div className="co2-success-pills">
-          <span className="co2-pill green">📦 {itemCount} item{itemCount !== 1 ? "s" : ""}</span>
-          <span className="co2-pill gold">{fmt(totalWithDelivery)}</span>
+          <span className="co2-pill green">📦 {orderItemCount} item{orderItemCount !== 1 ? "s" : ""}</span>
+          <span className="co2-pill gold">{fmt(orderTotal)}</span>
           <span className="co2-pill">🛵 Cash on Delivery</span>
         </div>
-        <button className="co2-cta-btn" onClick={() => setPage("home")}>
-          Continue Shopping →
-        </button>
+        <div style={{ display: "flex", gap: "12px", flexWrap: "wrap", justifyContent: "center" }}>
+          <button className="co2-cta-btn" onClick={() => setPage("home")}>
+            Continue Shopping →
+          </button>
+          <button className="co2-back-btn" onClick={() => setPage("orders")}>
+            View My Orders
+          </button>
+        </div>
       </div>
     </div>
-  );
+    );
+  }
 
   // ── OTP STEP ─────────────────────────────────────────────────────────────────
   if (step === "otp") return (

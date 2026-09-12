@@ -189,7 +189,7 @@ export default function Shell({ children }) {
 
       {/* DRAWERS */}
       {cartOpen && <CartDrawer cart={cart} removeFromCart={removeFromCart} updateCartQty={updateCartQty} cartTotal={cartTotal} onClose={() => setCartOpen(false)} onCheckout={() => { setCartOpen(false); navigate("checkout"); }} />}
-      {favOpen  && <FavouritesDrawer favourites={favourites} toggleFavourite={toggleFavourite} addToCart={addToCart} recentOrders={recentOrders} onClose={() => setFavOpen(false)} />}
+      {favOpen  && <FavouritesDrawer favourites={favourites} toggleFavourite={toggleFavourite} addToCart={addToCart} recentOrders={recentOrders} onClose={() => setFavOpen(false)} onViewOrders={() => { setFavOpen(false); navigate("orders"); }} />}
 
       {!isAdminRoute && <Footer setPage={navigate} goToProducts={(sub) => navigate(sub)} />}
     </>

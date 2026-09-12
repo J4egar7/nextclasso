@@ -76,9 +76,19 @@ export function StoreProvider({ children }) {
   const cartCount = cart.reduce((sum, i) => sum + i.qty, 0);
 
   const placeOrder = useCallback(() => {
-    setRecentOrders(o => [...cart.map(i => ({ ...i, orderedAt: Date.now() })), ...o]);
+    const deliveryFee = cartTotal >= 5000 ? 0 : 250;
+    const order = {
+      id: `ORD-${Date.now()}`,
+      items: cart.map(i => ({ id: i.id, name: i.name, brand: i.brand, price: i.price, qty: i.qty, bg: i.bg, emoji: i.emoji })),
+      itemsTotal: cartTotal,
+      deliveryFee,
+      total: cartTotal + deliveryFee,
+      placedAt: Date.now(),
+    };
+    setRecentOrders(o => [order, ...o]);
     setCart([]);
-  }, [cart]);
+    return order;
+  }, [cart, cartTotal]);
 
   const value = {
     cart, favourites, recentOrders, toast, toastVisible, user, setUser,

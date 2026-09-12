@@ -1,10 +1,7 @@
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=DM+Sans:wght@300;400;500;600&family=Bebas+Neue&family=Cormorant+Garamond:ital,wght@0,300;0,600;1,300;1,600&display=swap');
 /* Base resets, merged from the old CRA index.css */
 body {
   margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
+  font-family: var(--font-dmsans), -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -53,7 +50,7 @@ code {
   html { scroll-behavior: smooth; }
 
   body {
-    font-family: 'DM Sans', sans-serif;
+    font-family: var(--font-dmsans), sans-serif;
     overflow-x: hidden;
     cursor: auto;
   }
@@ -73,7 +70,7 @@ code {
     box-shadow: 0 4px 40px rgba(0,0,0,0.08);
   }
   .nav-logo {
-    font-family: 'Bebas Neue', sans-serif;
+    font-family: var(--font-bebas), sans-serif;
     font-size: 28px;
     letter-spacing: 4px;
     background: var(--logo-grad);
@@ -242,7 +239,7 @@ code {
   .hero-tag::before { content:'✦'; font-size:10px; }
 
   .hero-title {
-    font-family: 'Playfair Display', serif;
+    font-family: var(--font-playfair), serif;
     font-size: clamp(52px, 7vw, 88px);
     line-height: 1.0;
     font-weight: 900;
@@ -310,7 +307,7 @@ code {
   .hero-card-sm.c2 { animation: float2 5s ease-in-out infinite; }
   .hero-card-sm.c3 { animation: float2 6s ease-in-out infinite; }
   .hero-card-sm .num {
-    font-family: 'Bebas Neue', serif;
+    font-family: var(--font-bebas), sans-serif;
     font-size: 28px; line-height: 1;
     background: var(--logo-grad);
     -webkit-background-clip: text;
@@ -333,7 +330,7 @@ code {
   }
   @keyframes marquee { 0%{transform:translateX(0)} 100%{transform:translateX(-50%)} }
   .marquee-item {
-    font-family: 'Bebas Neue', sans-serif;
+    font-family: var(--font-bebas), sans-serif;
     font-size: 16px; letter-spacing: 4px;
     color: white; opacity: 0.9;
     display: flex; align-items: center; gap: 24px;
@@ -350,7 +347,7 @@ code {
   }
   .stat-item { text-align: center; }
   .stat-num {
-    font-family: 'Bebas Neue', sans-serif;
+    font-family: var(--font-bebas), sans-serif;
     font-size: 64px; line-height: 1;
     background: var(--logo-grad);
     -webkit-background-clip: text;
@@ -374,7 +371,7 @@ code {
     margin-bottom: 10px;
   }
   .section-title {
-    font-family: 'Playfair Display', serif;
+    font-family: var(--font-playfair), serif;
     font-size: clamp(32px, 4vw, 52px);
     font-weight: 700; line-height: 1.1;
     color: var(--home-dark);
@@ -442,7 +439,7 @@ code {
     margin-bottom: 4px;
   }
   .product-name {
-    font-family: 'Playfair Display', serif;
+    font-family: var(--font-playfair), serif;
     font-size: 17px; font-weight: 600;
     color: var(--home-dark);
     margin-bottom: 8px;
@@ -452,7 +449,7 @@ code {
   .rating-count { font-size: 11px; color: rgba(0,0,0,0.4); }
   .product-footer { display: flex; align-items: center; justify-content: space-between; }
   .product-price {
-    font-family: 'Playfair Display', serif;
+    font-family: var(--font-playfair), serif;
     font-size: 22px; font-weight: 700;
     color: var(--home-primary);
   }
@@ -488,7 +485,7 @@ code {
   .banner-half.coral { background: linear-gradient(135deg, #FF5E5B, #FF8E70); }
   .banner-half.teal { background: linear-gradient(135deg, #39B5A0, #52D9C5); }
   .banner-half-title {
-    font-family: 'Bebas Neue', sans-serif;
+    font-family: var(--font-bebas), sans-serif;
     font-size: clamp(44px, 5vw, 72px);
     color: white; line-height: 1;
     margin-bottom: 16px; letter-spacing: 3px;
@@ -523,7 +520,7 @@ code {
     margin-bottom: 12px;
   }
   .reviews-title {
-    font-family: 'Playfair Display', serif;
+    font-family: var(--font-playfair), serif;
     font-size: clamp(32px, 4vw, 52px);
     color: white; font-style: italic;
   }
@@ -553,7 +550,7 @@ code {
   }
   .review-stars { color: #FFD166; font-size: 16px; margin-bottom: 16px; }
   .review-text {
-    font-family: 'Cormorant Garamond', serif;
+    font-family: var(--font-cormorant), serif;
     font-size: 17px; line-height: 1.65;
     color: rgba(255,255,255,0.85);
     font-style: italic;
@@ -593,7 +590,7 @@ code {
     margin-bottom: 16px;
   }
   .ritual-title {
-    font-family: 'Playfair Display', serif;
+    font-family: var(--font-playfair), serif;
     font-size: clamp(36px, 4vw, 56px);
     color: white; line-height: 1.1;
     font-weight: 700; margin-bottom: 24px;
@@ -608,7 +605,7 @@ code {
   }
   .ritual-step:hover { background: rgba(255,255,255,0.18); transform: translateX(8px); }
   .step-num {
-    font-family: 'Bebas Neue', sans-serif;
+    font-family: var(--font-bebas), sans-serif;
     font-size: 28px; color: rgba(255,255,255,0.3);
     min-width: 32px;
   }
@@ -622,7 +619,7 @@ code {
     text-align: center;
   }
   .newsletter-title {
-    font-family: 'Playfair Display', serif;
+    font-family: var(--font-playfair), serif;
     font-size: clamp(32px, 4vw, 48px);
     color: var(--home-dark); font-weight: 700;
     margin-bottom: 12px;
@@ -636,7 +633,7 @@ code {
   }
   .newsletter-input {
     flex: 1; border: none; outline: none;
-    font-size: 14px; font-family: 'DM Sans', sans-serif;
+    font-size: 14px; font-family: var(--font-dmsans), sans-serif;
     background: transparent; color: var(--home-dark);
   }
   .newsletter-btn {
@@ -654,7 +651,7 @@ code {
     min-height: 100vh;
     background: var(--skin-light);
     position: relative; overflow: hidden;
-    display: flex; align-items: center;
+    display: flex; align-items: center; justify-content: space-between;
     padding: 0 8vw;
     padding-top: 80px;
   }
@@ -684,7 +681,7 @@ code {
     margin-bottom: 28px;
   }
   .skin-title {
-    font-family: 'Playfair Display', serif;
+    font-family: var(--font-playfair), serif;
     font-size: clamp(48px, 6vw, 82px);
     line-height: 1.05; font-weight: 900;
     color: var(--skin-dark);
@@ -712,7 +709,7 @@ code {
     margin-bottom: 10px;
   }
   .skin-section-title {
-    font-family: 'Playfair Display', serif;
+    font-family: var(--font-playfair), serif;
     font-size: clamp(32px, 4vw, 48px); font-weight: 700;
     color: var(--skin-dark);
   }
@@ -747,7 +744,7 @@ code {
     margin-bottom: 3px;
   }
   .skin-name {
-    font-family: 'Playfair Display', serif;
+    font-family: var(--font-playfair), serif;
     font-size: 16px; font-weight: 600;
     color: var(--skin-dark); margin-bottom: 5px;
     line-height: 1.2;
@@ -755,7 +752,7 @@ code {
   .skin-desc { font-size: 12px; color: rgba(28,15,20,0.5); line-height: 1.4; margin-bottom: 10px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
   .skin-footer { display: flex; align-items: center; justify-content: space-between; }
   .skin-price {
-    font-family: 'Playfair Display', serif;
+    font-family: var(--font-playfair), serif;
     font-size: 18px; font-weight: 700;
     color: var(--skin-primary);
   }
@@ -770,11 +767,14 @@ code {
   }
   .add-btn-skin:hover { transform: scale(1.1); box-shadow: 0 8px 20px rgba(201,116,143,0.4); }
 
-  /* SKINCARE HERO VISUAL */
+  /* SKINCARE HERO VISUAL — a normal flex sibling of the text block now
+     (not absolutely positioned), so both are centered by the exact same
+     `align-items: center` rule and stay perfectly aligned regardless of
+     the section's padding. */
   .skin-hero-visual {
-    position: absolute; right: 6vw; top: 50%;
-    transform: translateY(-50%);
+    position: relative;
     width: 420px; height: 480px;
+    flex-shrink: 0;
     z-index: 10;
     animation: slideIn 0.8s 0.2s ease both;
   }
@@ -808,10 +808,13 @@ code {
   .skin-float-val { font-size: 12px; color: rgba(28,15,20,0.5); margin-top: 2px; font-weight: 400; }
 
   /* MAKEUP HERO VISUAL */
+  /* MAKEUP HERO VISUAL — same fix as the skincare hero: a normal flex
+     sibling instead of absolutely positioned, so it's centered by the
+     same rule as the text block instead of drifting out of alignment. */
   .make-hero-visual {
-    position: absolute; right: 6vw; top: 50%;
-    transform: translateY(-50%);
+    position: relative;
     width: 420px; height: 480px;
+    flex-shrink: 0;
     z-index: 10;
     animation: slideIn 0.8s 0.2s ease both;
   }
@@ -872,7 +875,7 @@ code {
     animation: slideIn 0.8s ease both;
   }
   .brands-hero-title {
-    font-family: 'Playfair Display', serif;
+    font-family: var(--font-playfair), serif;
     font-size: clamp(44px, 6vw, 80px);
     line-height: 1.05; font-weight: 900;
     color: white;
@@ -896,7 +899,7 @@ code {
     animation: slideIn 0.8s 0.3s ease both;
   }
   .auth-num {
-    font-family: 'Bebas Neue', sans-serif;
+    font-family: var(--font-bebas), sans-serif;
     font-size: 60px; line-height: 1;
     background: var(--logo-grad);
     -webkit-background-clip: text;
@@ -917,7 +920,7 @@ code {
     margin-bottom: 10px;
   }
   .brands-section-title {
-    font-family: 'Playfair Display', serif;
+    font-family: var(--font-playfair), serif;
     font-size: clamp(32px, 4vw, 48px); font-weight: 700;
     color: var(--home-dark);
     margin-bottom: 56px;
@@ -972,7 +975,7 @@ code {
     margin-bottom: 6px;
   }
   .brand-card-name {
-    font-family: 'Playfair Display', serif;
+    font-family: var(--font-playfair), serif;
     font-size: 22px; font-weight: 700;
     color: var(--home-dark); margin-bottom: 8px;
   }
@@ -1002,7 +1005,7 @@ code {
     text-align: center;
   }
   .brands-promise-title {
-    font-family: 'Cormorant Garamond', serif;
+    font-family: var(--font-cormorant), serif;
     font-size: clamp(26px, 3.5vw, 44px);
     color: white; font-style: italic; font-weight: 600;
     line-height: 1.4; margin-bottom: 20px;
@@ -1019,7 +1022,7 @@ code {
     padding: 100px 8vw;
   }
   .concern-title {
-    font-family: 'Playfair Display', serif;
+    font-family: var(--font-playfair), serif;
     font-size: clamp(32px, 4vw, 48px);
     color: white; font-weight: 700;
     text-align: center; margin-bottom: 60px;
@@ -1047,7 +1050,7 @@ code {
     min-height: 100vh;
     background: var(--make-dark);
     position: relative; overflow: hidden;
-    display: flex; align-items: center;
+    display: flex; align-items: center; justify-content: space-between;
     padding: 0 8vw;
     padding-top: 80px;
   }
@@ -1075,7 +1078,7 @@ code {
     margin-bottom: 28px;
   }
   .make-title {
-    font-family: 'Playfair Display', serif;
+    font-family: var(--font-playfair), serif;
     font-size: clamp(48px, 6vw, 82px);
     line-height: 1.0; font-weight: 900; color: white;
   }
@@ -1102,7 +1105,7 @@ code {
     margin-bottom: 10px;
   }
   .make-section-title {
-    font-family: 'Playfair Display', serif;
+    font-family: var(--font-playfair), serif;
     font-size: clamp(32px, 4vw, 48px); font-weight: 700;
     color: var(--make-dark);
     margin-bottom: 56px;
@@ -1138,7 +1141,7 @@ code {
     margin-bottom: 3px;
   }
   .make-name {
-    font-family: 'Playfair Display', serif;
+    font-family: var(--font-playfair), serif;
     font-size: 16px; font-weight: 600;
     color: var(--make-dark); margin-bottom: 5px;
     line-height: 1.2;
@@ -1146,7 +1149,7 @@ code {
   .make-desc { font-size: 12px; color: rgba(10,0,32,0.45); line-height: 1.4; margin-bottom: 10px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
   .make-footer { display: flex; align-items: center; justify-content: space-between; }
   .make-price {
-    font-family: 'Playfair Display', serif;
+    font-family: var(--font-playfair), serif;
     font-size: 18px; font-weight: 700;
     color: var(--make-primary);
   }
@@ -1167,7 +1170,7 @@ code {
     padding: 100px 8vw;
   }
   .shades-title {
-    font-family: 'Playfair Display', serif;
+    font-family: var(--font-playfair), serif;
     font-size: clamp(32px, 4vw, 48px);
     color: white; text-align: center; margin-bottom: 60px;
     font-style: italic;
@@ -1215,7 +1218,7 @@ code {
     margin-bottom: 28px;
   }
   .about-title {
-    font-family: 'Playfair Display', serif;
+    font-family: var(--font-playfair), serif;
     font-size: clamp(56px, 9vw, 110px);
     line-height: 0.95; font-weight: 900;
     color: var(--about-dark);
@@ -1239,7 +1242,7 @@ code {
 
   .about-values { padding: 100px 8vw; background: var(--about-light); }
   .about-val-title {
-    font-family: 'Playfair Display', serif;
+    font-family: var(--font-playfair), serif;
     font-size: clamp(32px, 4vw, 48px); font-weight: 700;
     text-align: center; color: var(--about-dark);
     margin-bottom: 64px;
@@ -1267,7 +1270,7 @@ code {
   .value-icon.orange { background: rgba(224,92,20,0.1); }
   .value-icon.sage { background: rgba(93,138,94,0.1); }
   .value-name {
-    font-family: 'Playfair Display', serif;
+    font-family: var(--font-playfair), serif;
     font-size: 22px; font-weight: 700;
     color: var(--about-dark); margin-bottom: 12px;
   }
@@ -1277,7 +1280,7 @@ code {
   .about-stats { background: var(--about-secondary); padding: 80px 8vw; }
   .about-stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 40px; text-align: center; }
   .a-stat-num {
-    font-family: 'Bebas Neue', sans-serif;
+    font-family: var(--font-bebas), sans-serif;
     font-size: 56px; line-height: 1;
     color: white;
   }
@@ -1290,7 +1293,7 @@ code {
   }
   .footer-grid { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 60px; margin-bottom: 60px; }
   .footer-logo {
-    font-family: 'Bebas Neue', sans-serif;
+    font-family: var(--font-bebas), sans-serif;
     font-size: 36px; letter-spacing: 4px;
     background: var(--logo-grad);
     -webkit-background-clip: text;
@@ -1354,7 +1357,7 @@ code {
     display: flex; gap: 60px; white-space: nowrap;
     width: max-content;
     animation: marquee2 30s linear infinite;
-    font-family: 'Bebas Neue', sans-serif;
+    font-family: var(--font-bebas), sans-serif;
     font-size: 72px; color: rgba(255,255,255,0.12);
     letter-spacing: 8px;
   }
@@ -1362,7 +1365,7 @@ code {
   .parallax-text span { flex-shrink: 0; }
   .parallax-text-overlay {
     position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%);
-    font-family: 'Playfair Display', serif;
+    font-family: var(--font-playfair), serif;
     font-size: clamp(24px, 3vw, 36px); color: white;
     font-style: italic; font-weight: 600; text-align: center;
     pointer-events: none; white-space: nowrap;
@@ -1457,7 +1460,7 @@ code {
       border-bottom: 1px solid rgba(0,0,0,0.07);
     }
     .mobile-menu-logo {
-      font-family: 'Bebas Neue', sans-serif;
+      font-family: var(--font-bebas), sans-serif;
       font-size: 22px; letter-spacing: 4px;
       background: var(--logo-grad);
       -webkit-background-clip: text; -webkit-text-fill-color: transparent;
@@ -1605,9 +1608,9 @@ code {
   .modal-close:hover { background: #eee; transform: scale(1.1); }
   .modal-emoji { font-size: 100px; text-align: center; margin-bottom: 24px; }
   .modal-brand { font-size: 11px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: rgba(0,0,0,0.35); margin-bottom: 6px; }
-  .modal-name { font-family: 'Playfair Display', serif; font-size: 28px; font-weight: 700; margin-bottom: 12px; }
+  .modal-name { font-family: var(--font-playfair), serif; font-size: 28px; font-weight: 700; margin-bottom: 12px; }
   .modal-desc { font-size: 15px; line-height: 1.7; color: rgba(0,0,0,0.55); margin-bottom: 24px; }
-  .modal-price { font-family: 'Playfair Display', serif; font-size: 32px; font-weight: 700; margin-bottom: 28px; }
+  .modal-price { font-family: var(--font-playfair), serif; font-size: 32px; font-weight: 700; margin-bottom: 28px; }
   .modal-btn {
     width: 100%; padding: 16px; border-radius: 100px;
     border: none; color: white;
@@ -1656,7 +1659,7 @@ code {
     animation: fadeIn 0.5s ease both;
   }
   .auth-logo {
-    font-family: 'Bebas Neue', sans-serif;
+    font-family: var(--font-bebas), sans-serif;
     font-size: 22px; letter-spacing: 4px;
     background: var(--auth-grad);
     -webkit-background-clip: text; -webkit-text-fill-color: transparent;
@@ -1664,7 +1667,7 @@ code {
     cursor: pointer;
   }
   .auth-title {
-    font-family: 'Playfair Display', serif;
+    font-family: var(--font-playfair), serif;
     font-size: 30px; font-weight: 700; color: #F5EDD8;
     margin-bottom: 8px;
   }
@@ -1706,7 +1709,7 @@ code {
     background: rgba(255,255,255,0.04);
     border: 1.5px solid var(--auth-border);
     border-radius: 14px;
-    color: #F5EDD8; font-size: 15px; font-family: 'DM Sans', sans-serif;
+    color: #F5EDD8; font-size: 15px; font-family: var(--font-dmsans), sans-serif;
     outline: none; transition: border-color 0.25s;
   }
   .auth-input.with-toggle { padding-left: 64px; }
@@ -1786,7 +1789,7 @@ code {
     display: flex; align-items: center; justify-content: space-between;
   }
   .cart-header-title {
-    font-family: 'Playfair Display', serif;
+    font-family: var(--font-playfair), serif;
     font-size: 22px; font-weight: 700; color: white;
   }
   .cart-header-count {
@@ -1843,7 +1846,7 @@ code {
   .cart-item.makeup .cart-item-brand { color: rgba(167,139,250,0.7); }
   .cart-item.home .cart-item-brand { color: rgba(255,94,91,0.7); }
   .cart-item-name {
-    font-family: 'Playfair Display', serif;
+    font-family: var(--font-playfair), serif;
     font-size: 14px; font-weight: 600; color: white;
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
   }
@@ -1871,7 +1874,7 @@ code {
   }
   .cart-total-label { font-size: 13px; color: rgba(255,255,255,0.45); font-weight: 500; }
   .cart-total-val {
-    font-family: 'Playfair Display', serif;
+    font-family: var(--font-playfair), serif;
     font-size: 24px; font-weight: 700;
     background: var(--logo-grad);
     -webkit-background-clip: text; -webkit-text-fill-color: transparent;
@@ -1925,7 +1928,7 @@ code {
     min-height: 100vh;
     background: var(--adm-bg);
     display: flex; padding-top: 72px;
-    font-family: 'DM Sans', sans-serif;
+    font-family: var(--font-dmsans), sans-serif;
     animation: fadeIn 0.4s ease both;
   }
   .admin-sidebar {
@@ -1942,7 +1945,7 @@ code {
     margin-bottom: 12px;
   }
   .adm-sidebar-title {
-    font-family: 'Bebas Neue', sans-serif;
+    font-family: var(--font-bebas), sans-serif;
     font-size: 14px; letter-spacing: 3px;
     color: var(--adm-primary); margin-bottom: 4px;
   }
@@ -1966,7 +1969,7 @@ code {
     overflow-y: auto;
   }
   .adm-page-title {
-    font-family: 'Playfair Display', serif;
+    font-family: var(--font-playfair), serif;
     font-size: 28px; font-weight: 700; color: var(--adm-text);
     margin-bottom: 6px;
   }
@@ -2021,7 +2024,7 @@ code {
     border: 1.5px solid var(--adm-border);
     border-radius: 10px; padding: 12px 14px;
     color: var(--adm-text); font-size: 14px;
-    font-family: 'DM Sans', sans-serif;
+    font-family: var(--font-dmsans), sans-serif;
     outline: none; transition: border-color 0.2s;
   }
   .adm-input:focus { border-color: var(--adm-primary); }
@@ -2031,7 +2034,7 @@ code {
     border: 1.5px solid var(--adm-border);
     border-radius: 10px; padding: 12px 14px;
     color: var(--adm-text); font-size: 14px;
-    font-family: 'DM Sans', sans-serif;
+    font-family: var(--font-dmsans), sans-serif;
     outline: none; transition: border-color 0.2s;
     resize: vertical; min-height: 90px;
   }
@@ -2042,7 +2045,7 @@ code {
     border: 1.5px solid var(--adm-border);
     border-radius: 10px; padding: 12px 14px;
     color: var(--adm-text); font-size: 14px;
-    font-family: 'DM Sans', sans-serif;
+    font-family: var(--font-dmsans), sans-serif;
     outline: none; cursor: pointer;
     transition: border-color 0.2s;
     appearance: none;
@@ -2177,7 +2180,7 @@ code {
   }
   .adm-stat-icon { font-size: 28px; margin-bottom: 12px; }
   .adm-stat-val {
-    font-family: 'Bebas Neue', sans-serif;
+    font-family: var(--font-bebas), sans-serif;
     font-size: 36px; color: var(--adm-text); line-height: 1;
     margin-bottom: 4px;
   }
@@ -2208,7 +2211,7 @@ code {
     background: linear-gradient(135deg, rgba(220,38,120,0.08) 0%, rgba(159,18,57,0.06) 100%);
   }
   .fav-header-title {
-    font-family: 'Playfair Display', serif;
+    font-family: var(--font-playfair), serif;
     font-size: 22px; font-weight: 700; color: white;
     display: flex; align-items: center; gap: 10px;
   }
@@ -2268,7 +2271,7 @@ code {
   .fav-item.skin .fav-item-brand { color: rgba(212,168,67,0.6); }
   .fav-item.makeup .fav-item-brand { color: rgba(167,139,250,0.6); }
   .fav-item.home .fav-item-brand { color: rgba(255,94,91,0.6); }
-  .fav-item-name { font-family: 'Playfair Display', serif; font-size: 13px; font-weight: 600; color: white; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .fav-item-name { font-family: var(--font-playfair), serif; font-size: 13px; font-weight: 600; color: white; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .fav-item-price { font-size: 12px; font-weight: 700; margin-top: 3px; color: #FF8FA3; }
   .fav-item.skin .fav-item-price { color: #D4A843; }
   .fav-item.makeup .fav-item-price { color: #A78BFA; }
@@ -2365,7 +2368,7 @@ code {
     display: grid; grid-template-columns: 1fr 420px; gap: 40px; align-items: start;
   }
   .checkout-section-title {
-    font-family: 'Playfair Display', serif;
+    font-family: var(--font-playfair), serif;
     font-size: 20px; font-weight: 700; color: white;
     margin-bottom: 20px; display: flex; align-items: center; gap: 10px;
   }
@@ -2387,7 +2390,7 @@ code {
     background: rgba(255,255,255,0.04);
     border: 1.5px solid rgba(255,255,255,0.08);
     border-radius: 12px; color: white;
-    font-size: 14px; font-family: 'DM Sans', sans-serif;
+    font-size: 14px; font-family: var(--font-dmsans), sans-serif;
     outline: none; transition: border-color 0.2s;
   }
   .checkout-input:focus { border-color: rgba(201,169,110,0.5); }
@@ -2397,7 +2400,7 @@ code {
     background: rgba(255,255,255,0.04);
     border: 1.5px solid rgba(255,255,255,0.08);
     border-radius: 12px; color: white;
-    font-size: 14px; font-family: 'DM Sans', sans-serif;
+    font-size: 14px; font-family: var(--font-dmsans), sans-serif;
     outline: none; transition: border-color 0.2s;
     resize: vertical; min-height: 80px;
   }
@@ -2456,7 +2459,7 @@ code {
     position: sticky; top: 100px;
   }
   .summary-title {
-    font-family: 'Playfair Display', serif;
+    font-family: var(--font-playfair), serif;
     font-size: 18px; font-weight: 700; color: white; margin-bottom: 20px;
   }
   .summary-row {
@@ -2468,7 +2471,7 @@ code {
   .summary-row.total { padding-top: 16px; margin-top: 4px; border-top: 1px solid rgba(255,255,255,0.1); border-bottom: none; }
   .summary-row.total span:first-child { font-size: 14px; font-weight: 600; color: rgba(255,255,255,0.7); }
   .summary-total-val {
-    font-family: 'Playfair Display', serif; font-size: 26px; font-weight: 700;
+    font-family: var(--font-playfair), serif; font-size: 26px; font-weight: 700;
     background: var(--logo-grad);
     -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
   }
@@ -2482,7 +2485,7 @@ code {
   .checkout-place-btn:hover { transform: translateY(-2px); box-shadow: 0 14px 32px rgba(255,94,91,0.35); }
   .checkout-place-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
   .checkout-page-title {
-    font-family: 'Playfair Display', serif;
+    font-family: var(--font-playfair), serif;
     font-size: clamp(28px,4vw,42px); font-weight: 700; color: white;
     margin-bottom: 8px;
   }
@@ -2503,7 +2506,7 @@ code {
     text-align: center; padding: 40px;
   }
   .order-success-icon { font-size: 72px; margin-bottom: 24px; animation: fadeIn 0.5s 0.2s both; }
-  .order-success-title { font-family: 'Playfair Display', serif; font-size: 36px; font-weight: 700; color: white; margin-bottom: 12px; }
+  .order-success-title { font-family: var(--font-playfair), serif; font-size: 36px; font-weight: 700; color: white; margin-bottom: 12px; }
   .order-success-sub { font-size: 15px; color: rgba(255,255,255,0.45); max-width: 420px; line-height: 1.7; margin-bottom: 36px; }
 
   /* ==================== PRODUCT LIST & FILTERS ==================== */
@@ -2512,7 +2515,7 @@ code {
     display: flex; align-items: center; justify-content: space-between;
     padding: 28px 0 20px; flex-wrap: wrap; gap: 12px;
   }
-  .pl-title { font-family: 'Playfair Display', serif; font-size: 20px; font-weight: 700; }
+  .pl-title { font-family: var(--font-playfair), serif; font-size: 20px; font-weight: 700; }
   .pl-count { font-size: 13px; opacity: 0.45; margin-left: 8px; font-weight: 400; }
   .pl-layout { display: grid; grid-template-columns: 260px 1fr; gap: 32px; align-items: start; }
   /* FILTER SIDEBAR */
@@ -2546,7 +2549,7 @@ code {
   .price-range-row { display: flex; align-items: center; gap: 8px; }
   .price-range-input {
     width: 100%; padding: 8px 10px; border-radius: 8px;
-    font-size: 12px; font-family: 'DM Sans', sans-serif;
+    font-size: 12px; font-family: var(--font-dmsans), sans-serif;
     outline: none; transition: border-color 0.2s;
   }
   .price-range-input.skin { background: rgba(201,116,143,0.06); border: 1.5px solid rgba(201,116,143,0.2); color: var(--skin-dark); }
@@ -2659,7 +2662,7 @@ code {
     text-transform: uppercase; margin-bottom: 10px;
   }
   .pdp-name {
-    font-family: 'Playfair Display', serif;
+    font-family: var(--font-playfair), serif;
     font-size: clamp(26px, 3.5vw, 42px); font-weight: 700;
     color: #2A1C0C; line-height: 1.15; margin-bottom: 16px;
   }
@@ -2670,14 +2673,14 @@ code {
   .pdp-rating-val { font-size: 15px; font-weight: 700; color: #2A1C0C; }
   .pdp-review-count { font-size: 13px; color: rgba(42,28,12,0.4); }
   .pdp-price {
-    font-family: 'Playfair Display', serif;
+    font-family: var(--font-playfair), serif;
     font-size: 36px; font-weight: 700;
     margin-bottom: 8px;
   }
   .pdp-price-old {
     font-size: 15px; color: rgba(42,28,12,0.3);
     text-decoration: line-through; margin-left: 10px;
-    font-family: 'DM Sans', sans-serif; font-weight: 400;
+    font-family: var(--font-dmsans), sans-serif; font-weight: 400;
   }
   .pdp-delivery-note {
     font-size: 12px; color: rgba(93,138,94,0.85);
@@ -2764,7 +2767,7 @@ code {
     border-top: 1px solid rgba(141,110,99,0.12);
   }
   .pdp-reviews-title {
-    font-family: 'Playfair Display', serif;
+    font-family: var(--font-playfair), serif;
     font-size: clamp(26px,3.5vw,40px); font-weight: 700; color: #2A1C0C;
     margin-bottom: 8px;
   }
@@ -2798,7 +2801,7 @@ code {
   .pdp-review-card:hover { background: white; box-shadow: 0 8px 24px rgba(93,64,55,0.08); transform: translateY(-3px); }
   .pdp-review-stars { font-size: 14px; margin-bottom: 12px; color: #C9A96E; }
   .pdp-review-text {
-    font-family: 'Cormorant Garamond', serif;
+    font-family: var(--font-cormorant), serif;
     font-size: 15px; line-height: 1.65; color: rgba(42,28,12,0.7);
     font-style: italic; margin-bottom: 16px;
   }
@@ -2815,7 +2818,7 @@ code {
     margin-bottom: 48px;
     box-shadow: 0 4px 20px rgba(93,64,55,0.07);
   }
-  .pdp-write-title { font-family: 'Playfair Display', serif; font-size: 20px; font-weight: 700; color: #2A1C0C; margin-bottom: 4px; }
+  .pdp-write-title { font-family: var(--font-playfair), serif; font-size: 20px; font-weight: 700; color: #2A1C0C; margin-bottom: 4px; }
   .pdp-write-sub { font-size: 13px; color: rgba(42,28,12,0.4); margin-bottom: 20px; }
   .pdp-write-locked {
     display: flex; align-items: center; gap: 14px;
@@ -2833,7 +2836,7 @@ code {
     width: 100%; padding: 14px 16px;
     background: white; border: 1.5px solid rgba(141,110,99,0.2);
     border-radius: 14px; color: #2A1C0C;
-    font-size: 14px; font-family: 'DM Sans', sans-serif;
+    font-size: 14px; font-family: var(--font-dmsans), sans-serif;
     outline: none; transition: border-color 0.2s;
     resize: vertical; min-height: 90px;
     box-shadow: inset 0 1px 4px rgba(93,64,55,0.05);
@@ -2857,7 +2860,7 @@ code {
   /* RELATED PRODUCTS */
   .pdp-related { padding: 64px 8vw 80px; background: #F7F4EE; }
   .pdp-related-title {
-    font-family: 'Playfair Display', serif; font-size: clamp(22px,3vw,30px);
+    font-family: var(--font-playfair), serif; font-size: clamp(22px,3vw,30px);
     font-weight: 700; color: #2A1C0C; margin-bottom: 24px;
   }
   .pdp-related-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px,1fr)); gap: 18px; }
@@ -2872,7 +2875,7 @@ code {
   }
   .pdp-related-brand { font-size: 9.5px; font-weight: 700; letter-spacing: 1.2px; text-transform: uppercase; color: rgba(42,28,12,0.4); margin-bottom: 3px; }
   .pdp-related-name { font-size: 13.5px; font-weight: 600; color: #2A1C0C; line-height: 1.3; margin-bottom: 6px; }
-  .pdp-related-price { font-family: 'Playfair Display', serif; font-size: 15px; font-weight: 700; color: #5D4037; }
+  .pdp-related-price { font-family: var(--font-playfair), serif; font-size: 15px; font-weight: 700; color: #5D4037; }
 
   /* STICKY MOBILE ADD-TO-BAG BAR */
   .pdp-sticky-bar { display: none; }
@@ -2886,7 +2889,7 @@ code {
     }
     .pdp-sticky-info { flex: 1; min-width: 0; }
     .pdp-sticky-name { font-size: 11.5px; color: rgba(42,28,12,0.5); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .pdp-sticky-price { font-family: 'Playfair Display', serif; font-size: 16px; font-weight: 700; }
+    .pdp-sticky-price { font-family: var(--font-playfair), serif; font-size: 16px; font-weight: 700; }
     .pdp-sticky-fav {
       width: 42px; height: 42px; border-radius: 50%; flex-shrink: 0;
       background: #F7F4EE; border: 1px solid rgba(141,110,99,0.2);
@@ -2982,7 +2985,7 @@ code {
     text-transform: uppercase; color: var(--home-primary);
   }
   .dt-card-name {
-    font-family: 'Playfair Display', serif;
+    font-family: var(--font-playfair), serif;
     font-size: 16px; font-weight: 700; margin: 5px 0 7px;
     line-height: 1.25; color: var(--home-dark);
   }
@@ -3115,7 +3118,7 @@ code {
     text-transform: uppercase; color: var(--home-primary);
   }
   .mb-card-name {
-    font-family: 'Playfair Display', serif;
+    font-family: var(--font-playfair), serif;
     font-size: 15.5px; font-weight: 700; margin: 3px 0 8px;
     line-height: 1.25;
   }
@@ -3466,7 +3469,7 @@ code {
     flex-shrink: 0;
   }
   .mf-sheet.make .mf-sheet-header { border-bottom-color: rgba(255,255,255,0.09); }
-  .mf-sheet-title { font-family: 'Playfair Display', serif; font-size: 18px; font-weight: 700; color: var(--skin-dark, #1c0f14); }
+  .mf-sheet-title { font-family: var(--font-playfair), serif; font-size: 18px; font-weight: 700; color: var(--skin-dark, #1c0f14); }
   .mf-sheet.make .mf-sheet-title { color: white; }
   .mf-sheet-close {
     width: 32px; height: 32px; border-radius: 50%;
@@ -3521,7 +3524,7 @@ code {
     100% { box-shadow: 0 0 0 0 rgba(166,130,40,0); }
   }
   .coming-soon-text {
-    font-family: 'Playfair Display', serif;
+    font-family: var(--font-playfair), serif;
     font-size: 22px; font-weight: 700; letter-spacing: 0.3px;
     color: #a68228;
   }
@@ -3602,7 +3605,7 @@ code {
     100% { box-shadow: 0 0 0 0 rgba(255,140,0,0); }
   }
   .sale-banner-tag {
-    font-family: 'DM Sans', sans-serif;
+    font-family: var(--font-dmsans), sans-serif;
     font-size: 12px; font-weight: 800;
     letter-spacing: 3px; text-transform: uppercase;
     color: #FF8C00;
@@ -3613,7 +3616,7 @@ code {
   }
   .sale-banner-divider { width: 1px; height: 20px; background: rgba(255,140,0,0.25); flex-shrink: 0; }
   .sale-banner-text {
-    font-family: 'Playfair Display', serif;
+    font-family: var(--font-playfair), serif;
     font-size: clamp(26px, 3.5vw, 40px); font-weight: 800;
     color: #FFD580;
     letter-spacing: -0.5px;
@@ -3671,7 +3674,7 @@ code {
   .makeup-coming-icon { font-size: 36px; flex-shrink: 0; filter: drop-shadow(0 0 12px rgba(167,139,250,0.5)); }
   .makeup-coming-content { flex: 1; min-width: 200px; position: relative; z-index: 1; }
   .makeup-coming-title {
-    font-family: 'Playfair Display', serif;
+    font-family: var(--font-playfair), serif;
     font-size: 18px; font-weight: 700; color: rgba(255,255,255,0.9);
     margin-bottom: 4px;
   }
@@ -3770,7 +3773,7 @@ code {
   }
   .co2-back-btn:hover { background: rgba(255,255,255,0.09); color: rgba(255,255,255,0.85); border-color: rgba(255,255,255,0.15); }
   .co2-title {
-    font-family: 'Playfair Display', serif;
+    font-family: var(--font-playfair), serif;
     font-size: clamp(32px, 4.5vw, 48px); font-weight: 700;
     color: white; margin: 0 0 10px;
     letter-spacing: -0.5px;
@@ -3806,7 +3809,7 @@ code {
   }
   .co2-card:hover { border-color: rgba(255,255,255,0.11); }
   .co2-card-head {
-    font-family: 'Playfair Display', serif;
+    font-family: var(--font-playfair), serif;
     font-size: 17px; font-weight: 700; color: white;
     margin-bottom: 22px;
     display: flex; align-items: center; gap: 10px;
@@ -3828,7 +3831,7 @@ code {
     background: rgba(255,255,255,0.035);
     border: 1.5px solid rgba(255,255,255,0.08);
     border-radius: 14px; color: white;
-    font-size: 14px; font-family: 'DM Sans', sans-serif;
+    font-size: 14px; font-family: var(--font-dmsans), sans-serif;
     outline: none; transition: all 0.2s;
     box-sizing: border-box;
   }
@@ -3840,7 +3843,7 @@ code {
     background: rgba(255,255,255,0.035);
     border: 1.5px solid rgba(255,255,255,0.08);
     border-radius: 14px; color: white;
-    font-size: 14px; font-family: 'DM Sans', sans-serif;
+    font-size: 14px; font-family: var(--font-dmsans), sans-serif;
     outline: none; transition: all 0.2s;
     resize: vertical; min-height: 90px; box-sizing: border-box;
   }
@@ -3957,7 +3960,7 @@ code {
     box-shadow: 0 8px 48px rgba(0,0,0,0.35);
   }
   .co2-summary-title {
-    font-family: 'Playfair Display', serif;
+    font-family: var(--font-playfair), serif;
     font-size: 18px; font-weight: 700; color: white;
     margin-bottom: 20px;
     padding-bottom: 16px;
@@ -3991,7 +3994,7 @@ code {
     font-size: 13px; font-weight: 700; color: rgba(255,255,255,0.6);
   }
   .co2-total-val {
-    font-family: 'Playfair Display', serif;
+    font-family: var(--font-playfair), serif;
     font-size: 28px; font-weight: 700;
     background: linear-gradient(135deg, #ff5e5b, #ffa07a);
     -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
@@ -4004,7 +4007,7 @@ code {
     cursor: pointer; transition: all 0.3s; margin-top: 22px;
     box-shadow: 0 8px 32px rgba(255,94,91,0.35);
     letter-spacing: 0.4px;
-    font-family: 'DM Sans', sans-serif;
+    font-family: var(--font-dmsans), sans-serif;
   }
   .co2-cta-btn:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 16px 40px rgba(255,94,91,0.45); }
   .co2-cta-btn:active:not(:disabled) { transform: translateY(0); }
@@ -4033,7 +4036,7 @@ code {
   }
   .co2-otp-icon  { font-size: 60px; margin: 24px 0 18px; }
   .co2-otp-title {
-    font-family: 'Playfair Display', serif;
+    font-family: var(--font-playfair), serif;
     font-size: 28px; font-weight: 700; color: white; margin: 0 0 14px;
   }
   .co2-otp-hint  { font-size: 14px; color: rgba(255,255,255,0.38); line-height: 1.8; margin-bottom: 30px; }
@@ -4044,7 +4047,7 @@ code {
     border: 1.5px solid rgba(255,255,255,0.1);
     color: white; font-size: 30px; text-align: center;
     letter-spacing: 14px; outline: none;
-    font-family: 'DM Sans', sans-serif;
+    font-family: var(--font-dmsans), sans-serif;
     box-sizing: border-box; transition: all 0.2s;
   }
   .co2-otp-input:focus { border-color: rgba(255,140,80,0.5); box-shadow: 0 0 0 3px rgba(255,94,91,0.08); }
@@ -4073,7 +4076,7 @@ code {
   }
   .co2-success-check { font-size: 44px; color: white; font-weight: 700; line-height: 1; }
   .co2-success-title {
-    font-family: 'Playfair Display', serif;
+    font-family: var(--font-playfair), serif;
     font-size: 40px; font-weight: 700; color: white; margin: 0 0 16px;
   }
   .co2-success-msg {
@@ -4145,7 +4148,7 @@ code {
   }
 
   .adm-login-logo {
-    font-family: 'Playfair Display', serif;
+    font-family: var(--font-playfair), serif;
     font-size: 28px; font-weight: 700; letter-spacing: 3px;
     background: var(--logo-grad);
     -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
@@ -4161,7 +4164,7 @@ code {
     animation: fadeIn 0.5s 0.1s both;
   }
   .adm-login-title {
-    font-family: 'Playfair Display', serif;
+    font-family: var(--font-playfair), serif;
     font-size: 22px; font-weight: 700; color: white;
     margin-bottom: 6px;
   }
@@ -4182,7 +4185,7 @@ code {
     background: rgba(255,255,255,0.04);
     border: 1.5px solid rgba(255,255,255,0.08);
     border-radius: 12px; color: white;
-    font-size: 14px; font-family: 'DM Sans', sans-serif;
+    font-size: 14px; font-family: var(--font-dmsans), sans-serif;
     outline: none; transition: all 0.2s; box-sizing: border-box;
   }
   .adm-login-input:focus {
@@ -4245,3 +4248,41 @@ code {
   @media (max-width: 480px) {
     .adm-login-card { padding: 32px 24px 28px; }
   }
+
+/* ====================================================================
+   DESKTOP-ONLY: bigger product icons (mobile sizing untouched)
+   ==================================================================== */
+@media (min-width: 901px) {
+  .skin-img { font-size: 88px; }
+  .make-img span { font-size: 88px !important; }
+  .dt-card-img span { font-size: 84px !important; }
+}
+
+/* ====================================================================
+   DESKTOP BESTSELLERS: prev/next arrows either side of the card grid
+   ==================================================================== */
+.dt-carousel-nav {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+.dt-carousel-arrow {
+  flex-shrink: 0;
+  width: 48px; height: 48px;
+  border-radius: 50%;
+  border: 1.5px solid rgba(26,10,10,0.12);
+  background: white;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px; color: var(--home-dark, #1a0a0a);
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.06);
+}
+.dt-carousel-arrow:hover {
+  background: var(--home-primary, #FF5E5B);
+  border-color: var(--home-primary, #FF5E5B);
+  color: white;
+  transform: scale(1.06);
+}
+.dt-carousel-arrow:active { transform: scale(0.96); }
+.dt-carousel-track { flex: 1; min-width: 0; }

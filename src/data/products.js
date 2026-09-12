@@ -79,10 +79,14 @@ const makeupProducts = [
   { id:74, emoji:"🫧", brand:"BEAUTYBLENDER", name:"Original Blending Sponge", price:"PKR 2,600", priceNum:2600, desc:"The iconic pink egg sponge for flawless, streak-free blending", badge:"icon", bg:"linear-gradient(135deg,#FCE4EC,#F48FB1)", rating:4.7, reviews:5400, purchases:17000, views:71000, category:"Tools" },
 ];
 
+// The full catalog, every product across every section — used for direct
+// product-page lookups (so any product, not just bestsellers, has a working URL).
+const allProducts = [...homeProducts, ...skincareProducts, ...makeupProducts];
+
 // Curated for the mobile homepage carousel — every product across all three
 // catalogs that's tagged "bestseller", capped at 12 for the carousel (2 at a time x 6 pages).
-const bestsellerProducts = [...homeProducts, ...skincareProducts, ...makeupProducts]
+const bestsellerProducts = allProducts
   .filter(p => p.badge === "bestseller")
   .slice(0, 12);
 
-export { homeProducts, skincareProducts, makeupProducts, bestsellerProducts };
+export { homeProducts, skincareProducts, makeupProducts, bestsellerProducts, allProducts };

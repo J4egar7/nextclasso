@@ -1,5 +1,5 @@
 
-function FavouritesDrawer({ favourites, toggleFavourite, addToCart, recentOrders, onClose }) {
+function FavouritesDrawer({ favourites, toggleFavourite, addToCart, recentOrders, onClose, onViewOrders }) {
   const getTheme = (item) => {
     const tag = item._pageTag || "";
     if (tag === "skincare") return "skin";
@@ -53,13 +53,23 @@ function FavouritesDrawer({ favourites, toggleFavourite, addToCart, recentOrders
           {recentOrders.length === 0 ? (
             <div style={{ fontSize:"12px", color:"rgba(255,150,170,0.25)", textAlign:"center", padding:"16px 0" }}>No orders placed yet</div>
           ) : (
-            recentOrders.slice(0, 8).map((item, i) => (
-              <div key={i} className="recent-item">
-                <div className="recent-emoji">{item.emoji || "🛍️"}</div>
-                <div className="recent-name">{item.name}</div>
-                <div className="recent-price">{item.price}</div>
-              </div>
-            ))
+            <>
+              {(recentOrders || []).filter(o => o && Array.isArray(o.items)).slice(0, 3).flatMap(order => order.items).slice(0, 8).map((item, i) => (
+                <div key={i} className="recent-item">
+                  <div className="recent-emoji">{item.emoji || "🛍️"}</div>
+                  <div className="recent-name">{item.name}</div>
+                  <div className="recent-price">{item.price}</div>
+                </div>
+              ))}
+              {onViewOrders && (
+                <button
+                  onClick={onViewOrders}
+                  style={{ width:"100%", marginTop:"10px", padding:"11px", borderRadius:"100px", border:"1px solid rgba(255,150,170,0.25)", background:"transparent", color:"rgba(255,150,170,0.7)", fontSize:"12px", fontWeight:700, cursor:"pointer" }}
+                >
+                  View all orders →
+                </button>
+              )}
+            </>
           )}
         </div>
       </div>

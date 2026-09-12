@@ -5,7 +5,7 @@ import { useParams, useSearchParams } from "next/navigation";
 import ProductDetailPage from "../../../src/screens/ProductDetailPage.js";
 import { useStore } from "../../../src/lib/StoreContext.js";
 import { pageToPath } from "../../../src/lib/routes.js";
-import { bestsellerProducts } from "../../../src/data/products.js";
+import { allProducts } from "../../../src/data/products.js";
 
 export default function Page() {
   const router = useRouter();
@@ -13,8 +13,8 @@ export default function Page() {
   const searchParams = useSearchParams();
   const { addToCart, toggleFavourite, isFav, recentOrders, adminProducts } = useStore();
 
-  const allProducts = [...bestsellerProducts, ...adminProducts];
-  const product = allProducts.find(p => String(p.id) === String(params.id));
+  const allProductsWithAdmin = [...allProducts, ...adminProducts];
+  const product = allProductsWithAdmin.find(p => String(p.id) === String(params.id));
   const prevPage = searchParams.get("from") || "home";
 
   if (!product) {

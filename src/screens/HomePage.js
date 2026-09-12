@@ -119,17 +119,17 @@ function SkinPanel({ product, galleryTab, setGalleryTab, onInteract, onSwipeProd
   );
 }
 
-const PRODUCT_DISPLAY_MS = 3200;
-const PROGRESS_TICK_MS   = 80;
+const PRODUCT_DISPLAY_MS = 1800;
+const PROGRESS_TICK_MS   = 60;
 
 /* ============================================================
    DESKTOP: 4-up carousel with sticky skin panel on the right
    ============================================================ */
-function DesktopBestsellers({ addToCart, toggleFavourite, isFav, openProduct }) {
+function DesktopBestsellers({ addToCart, toggleFavourite, isFav, openProduct, startPage = 0 }) {
   const CARDS_PER_PAGE = 4;
   const totalPages = Math.ceil(bestsellerProducts.length / CARDS_PER_PAGE);
 
-  const [pageIndex,   setPageIndex]   = useState(0);
+  const [pageIndex,   setPageIndex]   = useState(Math.min(startPage, Math.max(0, totalPages - 1)));
   const [activeIdx,   setActiveIdx]   = useState(0); // which card in the current page is highlighted
   const [galleryTab,  setGalleryTab]  = useState(0);
   const [isPaused,    setIsPaused]    = useState(false);
@@ -169,6 +169,8 @@ function DesktopBestsellers({ addToCart, toggleFavourite, isFav, openProduct }) 
   useEffect(() => { setGalleryTab(0); }, [pageIndex]);
 
   const goToPage = (i) => { pauseAuto(); setPageIndex(i); setActiveIdx(0); };
+  const goPrev = () => { pauseAuto(); setPageIndex(i => (i - 1 + totalPages) % totalPages); setActiveIdx(0); };
+  const goNext = () => { pauseAuto(); setPageIndex(i => (i + 1) % totalPages); setActiveIdx(0); };
 
   const activeProduct = bestsellerProducts[pageIndex * CARDS_PER_PAGE + activeIdx]
     || bestsellerProducts[pageIndex * CARDS_PER_PAGE];
@@ -179,53 +181,59 @@ function DesktopBestsellers({ addToCart, toggleFavourite, isFav, openProduct }) 
     <div className="dt-bestsellers">
       {/* LEFT: carousel cards */}
       <div className="dt-carousel-col">
-        <div className="dt-cards-grid">
-          {pageProducts.map((p, idx) => {
-            const isActive = idx === activeIdx;
-            return (
-              <div key={p.id} className="dt-card-wrap">
-                {/* Progress ring indicator */}
-                <button
-                  className={`mb-display-indicator ${isActive ? "active" : ""}`}
-                  style={isActive ? { "--ring-pct": `${ringPct}%` } : undefined}
-                  onClick={(e) => { e.stopPropagation(); pauseAuto(); setActiveIdx(idx); }}
-                  aria-label={`Preview ${p.name}`}
-                >
-                  <span className="mb-display-indicator-dot">{isActive ? "👁" : "○"}</span>
-                </button>
-                <div
-                  className={`dt-card ${isActive ? "dt-card-active" : ""}`}
-                  onClick={() => { pauseAuto(); openProduct({ ...p, _prevPage: "home" }); }}
-                >
-                  <div className="dt-card-img" style={{ background: p.bg }}>
-                    <span style={{ fontSize: "52px" }}>{p.emoji}</span>
-                    {p.badge && <div className={`product-badge ${p.badge === "new" ? "new" : ""}`}>{p.badge}</div>}
+        <div className="dt-carousel-nav">
+          <button className="dt-carousel-arrow" onClick={goPrev} aria-label="Previous products">‹</button>
+          <div className="dt-carousel-track">
+            <div className="dt-cards-grid">
+              {pageProducts.map((p, idx) => {
+                const isActive = idx === activeIdx;
+                return (
+                  <div key={p.id} className="dt-card-wrap">
+                    {/* Progress ring indicator */}
                     <button
-                      className="product-wish-btn"
-                      onClick={e => { e.stopPropagation(); pauseAuto(); toggleFavourite(p); }}
+                      className={`mb-display-indicator ${isActive ? "active" : ""}`}
+                      style={isActive ? { "--ring-pct": `${ringPct}%` } : undefined}
+                      onClick={(e) => { e.stopPropagation(); pauseAuto(); setActiveIdx(idx); }}
+                      aria-label={`Preview ${p.name}`}
                     >
-                      {isFav(p.id) ? "❤️" : "🤍"}
+                      <span className="mb-display-indicator-dot">{isActive ? "👁" : "○"}</span>
                     </button>
-                  </div>
-                  <div className="dt-card-info">
-                    <div className="dt-card-brand">{p.brand}</div>
-                    <div className="dt-card-name">{p.name}</div>
-                    <div className="dt-card-rating">
-                      <span className="stars">{"★".repeat(Math.floor(p.rating))}</span>
-                      <span className="rating-count">({p.reviews})</span>
+                    <div
+                      className={`dt-card ${isActive ? "dt-card-active" : ""}`}
+                      onClick={() => { pauseAuto(); openProduct({ ...p, _prevPage: "home" }); }}
+                    >
+                      <div className="dt-card-img" style={{ background: p.bg }}>
+                        <span style={{ fontSize: "52px" }}>{p.emoji}</span>
+                        {p.badge && <div className={`product-badge ${p.badge === "new" ? "new" : ""}`}>{p.badge}</div>}
+                        <button
+                          className="product-wish-btn"
+                          onClick={e => { e.stopPropagation(); pauseAuto(); toggleFavourite(p); }}
+                        >
+                          {isFav(p.id) ? "❤️" : "🤍"}
+                        </button>
+                      </div>
+                      <div className="dt-card-info">
+                        <div className="dt-card-brand">{p.brand}</div>
+                        <div className="dt-card-name">{p.name}</div>
+                        <div className="dt-card-rating">
+                          <span className="stars">{"★".repeat(Math.floor(p.rating))}</span>
+                          <span className="rating-count">({p.reviews})</span>
+                        </div>
+                        <div className="dt-card-footer">
+                          <span className="dt-card-price">{p.price}</span>
+                          <button
+                            className="add-btn"
+                            onClick={e => { e.stopPropagation(); pauseAuto(); addToCart(p); }}
+                          >+</button>
+                        </div>
+                      </div>
                     </div>
-                    <div className="dt-card-footer">
-                      <span className="dt-card-price">{p.price}</span>
-                      <button
-                        className="add-btn"
-                        onClick={e => { e.stopPropagation(); pauseAuto(); addToCart(p); }}
-                      >+</button>
-                    </div>
                   </div>
-                </div>
-              </div>
-            );
-          })}
+                );
+              })}
+            </div>
+          </div>
+          <button className="dt-carousel-arrow" onClick={goNext} aria-label="Next products">›</button>
         </div>
 
         {/* Page dots */}
@@ -308,7 +316,23 @@ function MobileBestsellers({ addToCart, toggleFavourite, isFav, openProduct }) {
     }
   };
 
-  const onSwipeProduct = (dir) => { pauseAuto(); setSubIndex(s => Math.max(0, Math.min(1, s + dir))); };
+  const onSwipeProduct = (dir) => {
+    pauseAuto();
+    setSubIndex(s => {
+      const next = s + dir;
+      if (next > 1) {
+        // swiped past the last product on this page — advance to the next page
+        setPairIndex(i => (i + 1) % totalPairs);
+        return 0;
+      }
+      if (next < 0) {
+        // swiped back past the first product — go to the previous page's last product
+        setPairIndex(i => ((i - 1) % totalPairs + totalPairs) % totalPairs);
+        return 1;
+      }
+      return next;
+    });
+  };
   const showProduct = (page, idx) => { pauseAuto(); setPairIndex(page); setSubIndex(idx); };
 
   const activeProduct = bestsellerProducts[pairIndex * 2 + subIndex] || bestsellerProducts[pairIndex * 2];
@@ -504,6 +528,31 @@ function HomePage({ setPage, goToProducts, addToCart, toggleFavourite, isFav, op
           <div className="banner-emoji">💄</div>
         </div>
       </div>
+
+      {/* MORE BESTSELLERS — duplicate of the section above, further down the page */}
+      <section className="section section-home">
+        <div className="section-header">
+          <div>
+            <div className="section-eyebrow">✦ Customer Favourites</div>
+            <h2 className="section-title">More to <em>discover</em></h2>
+          </div>
+        </div>
+
+        <DesktopBestsellers
+          addToCart={addToCart}
+          toggleFavourite={toggleFavourite}
+          isFav={isFav}
+          openProduct={openProduct}
+          startPage={1}
+        />
+
+        <MobileBestsellers
+          addToCart={addToCart}
+          toggleFavourite={toggleFavourite}
+          isFav={isFav}
+          openProduct={openProduct}
+        />
+      </section>
 
       {/* PARALLAX TEXT BAND */}
       <div className="parallax-text-section" style={{ position: "relative" }}>

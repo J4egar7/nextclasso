@@ -7,6 +7,7 @@ export const pageToPath = (id) => {
     case "makeup":      return "/makeup";
     case "about":       return "/about";
     case "brands":      return "/brands";
+    case "orders":      return "/orders";
     case "checkout":    return "/checkout";
     case "admin":       return "/admin";
     case "admin-login": return "/admin/login";
@@ -21,6 +22,7 @@ export const pathToPage = (pathname) => {
   if (pathname.startsWith("/makeup")) return "makeup";
   if (pathname.startsWith("/about")) return "about";
   if (pathname.startsWith("/brands")) return "brands";
+  if (pathname.startsWith("/orders")) return "orders";
   if (pathname.startsWith("/checkout")) return "checkout";
   if (pathname.startsWith("/admin/login")) return "admin-login";
   if (pathname.startsWith("/admin")) return "admin";
