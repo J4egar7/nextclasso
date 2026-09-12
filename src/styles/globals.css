@@ -4286,3 +4286,19 @@ code {
 }
 .dt-carousel-arrow:active { transform: scale(0.96); }
 .dt-carousel-track { flex: 1; min-width: 0; }
+
+/* ====================================================================
+   SKINCARE "ALL PRODUCTS" LISTING (desktop only) — 2 per row instead of
+   3-4, with bigger product icons, so cards are easier to actually look
+   at while scrolling. Mobile (1 column) is untouched.
+   ==================================================================== */
+@media (min-width: 901px) {
+  .skin-listing .products-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 24px;
+  }
+  .skin-listing .skin-img {
+    font-size: 130px;
+    min-height: 220px;
+  }
+}

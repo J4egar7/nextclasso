@@ -190,7 +190,7 @@ function SkincarePage({ addToCart, goToProducts, toggleFavourite, isFav, openPro
 
       {/* ALL PRODUCTS — shown when View All clicked or concern selected */}
       {showAll && (
-        <section className="pl-wrap" id="skin-all-products">
+        <section className="pl-wrap skin-listing" id="skin-all-products">
           <div className="pl-header">
             <span style={{fontFamily:"Playfair Display,serif",fontSize:"22px",fontWeight:700,color:"var(--skin-dark)"}}>
               All Skincare
