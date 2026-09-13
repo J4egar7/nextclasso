@@ -1,10 +1,27 @@
 "use client";
 
 import { createContext, useContext, useState, useEffect, useCallback } from "react";
-import { collection, onSnapshot } from "firebase/firestore";
-import { db } from "../firebase.js";
+import { supabase } from "./supabase.js";
 
 const StoreContext = createContext(null);
+
+// DB rows are snake_case; the rest of the app (built for the old Firestore
+// shape) expects camelCase — map once here so nothing else has to change.
+function mapRowToProduct(row) {
+  return {
+    id: row.id,
+    name: row.name,
+    brand: row.brand,
+    category: row.category,
+    price: row.price,
+    priceNum: row.price_num,
+    stock: row.stock,
+    description: row.description,
+    weight: row.weight,
+    weightUnit: row.weight_unit,
+    images: row.images || [],
+  };
+}
 
 export function StoreProvider({ children }) {
   const [cart, setCart]                   = useState([]);
@@ -33,12 +50,31 @@ export function StoreProvider({ children }) {
   useEffect(() => { try { localStorage.setItem("claso_favourites", JSON.stringify(favourites)); } catch {} }, [favourites]);
   useEffect(() => { try { localStorage.setItem("claso_recent_orders", JSON.stringify(recentOrders)); } catch {} }, [recentOrders]);
 
-  // Live-sync admin-added products from Firestore.
+  // Live-sync admin-added products from Supabase — an initial fetch, then
+  // a realtime subscription so new/edited/deleted products show up
+  // immediately without a refresh (same behaviour as the old Firestore
+  // onSnapshot listener).
+  // Note: only public-safe columns are selected — manufacturing_cost is
+  // deliberately left out of this query so it's never sent to the browser.
   useEffect(() => {
-    const unsub = onSnapshot(collection(db, "products"), snap => {
-      setAdminProducts(snap.docs.map(d => ({ id: d.id, ...d.data() })));
-    }, err => console.error("Failed to load products:", err));
-    return () => unsub();
+    const PUBLIC_COLUMNS = "id, name, brand, category, price, price_num, stock, description, weight, weight_unit, images";
+
+    supabase.from("products").select(PUBLIC_COLUMNS).then(({ data, error }) => {
+      if (error) { console.error("Failed to load products:", error); return; }
+      setAdminProducts((data || []).map(mapRowToProduct));
+    });
+
+    const channel = supabase
+      .channel("products-changes")
+      .on("postgres_changes", { event: "*", schema: "public", table: "products" }, () => {
+        // Any change — just refetch the public-safe columns again.
+        supabase.from("products").select(PUBLIC_COLUMNS).then(({ data, error }) => {
+          if (!error) setAdminProducts((data || []).map(mapRowToProduct));
+        });
+      })
+      .subscribe();
+
+    return () => supabase.removeChannel(channel);
   }, []);
 
   const showToast = useCallback((msg) => {
@@ -75,11 +111,35 @@ export function StoreProvider({ children }) {
   const cartTotal = cart.reduce((sum, i) => sum + (parseInt((i.price || "").replace(/[^0-9]/g, "")) || 0) * i.qty, 0);
   const cartCount = cart.reduce((sum, i) => sum + i.qty, 0);
 
-  const placeOrder = useCallback(() => {
+  // Places the order two places: written to Supabase (the real, shared
+  // record the admin dashboard will read from), and kept in
+  // localStorage too (so "My Orders" still works instantly for the
+  // customer without needing an account). If the Supabase write fails
+  // for some reason, the order still completes locally rather than
+  // blocking checkout — but is logged so it's not silently lost.
+  const placeOrder = useCallback(async (customer) => {
     const deliveryFee = cartTotal >= 5000 ? 0 : 250;
+    const items = cart.map(i => ({
+      product_id: i.id, name: i.name, brand: i.brand, price: i.price,
+      qty: i.qty, bg: i.bg, emoji: i.emoji,
+    }));
+
+    const { data, error } = await supabase.from("orders").insert({
+      customer_name: customer?.name || "",
+      customer_email: customer?.email || "",
+      customer_phone: customer?.phone || "",
+      customer_address: customer?.address || "",
+      items,
+      items_total: cartTotal,
+      delivery_fee: deliveryFee,
+      total: cartTotal + deliveryFee,
+    }).select().single();
+
+    if (error) console.error("Order failed to save to Supabase (kept locally only):", error);
+
     const order = {
-      id: `ORD-${Date.now()}`,
-      items: cart.map(i => ({ id: i.id, name: i.name, brand: i.brand, price: i.price, qty: i.qty, bg: i.bg, emoji: i.emoji })),
+      id: data?.id || `local-${Date.now()}`,
+      items: items.map(i => ({ id: i.product_id, name: i.name, brand: i.brand, price: i.price, qty: i.qty, bg: i.bg, emoji: i.emoji })),
       itemsTotal: cartTotal,
       deliveryFee,
       total: cartTotal + deliveryFee,

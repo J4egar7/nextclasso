@@ -1,9 +1,8 @@
 function CheckoutDesktop({ setPage, cart, updateCartQty, removeFromCart, cartTotal, logic }) {
   const {
     form, setField, errors, step, setStep,
-    otpCode, setOtpCode, otpError, setOtpError,
-    sendingOtp, verifyingOtp,
-    fmt, getTheme, handleContinue, handleSendOtp, handleVerifyOtp,
+    placingOrder,
+    fmt, getTheme, handleContinue, confirmOrder,
     delivery, totalWithDelivery, itemCount, orderItemCount, orderTotal,
   } = logic;
 
@@ -37,48 +36,9 @@ function CheckoutDesktop({ setPage, cart, updateCartQty, removeFromCart, cartTot
     </div>
   );
 
-  // ── OTP STEP ─────────────────────────────────────────────────────────────────
-  if (step === "otp") return (
-    <div className="co2-page">
-      <div id="recaptcha-container" />
-      <div className="co2-otp-wrap">
-        <button className="co2-back-btn" onClick={() => setStep("review")}>← Back</button>
-        <div className="co2-otp-icon">📱</div>
-        <h2 className="co2-otp-title">Enter the code</h2>
-        <p className="co2-otp-hint">
-          We sent a 6-digit verification code to<br />
-          <strong style={{ color: "rgba(255,255,255,0.8)" }}>{form.phone}</strong>
-        </p>
-        <div className="co2-otp-field-wrap">
-          <input
-            className="co2-otp-input"
-            type="number"
-            inputMode="numeric"
-            placeholder="— — — — — —"
-            value={otpCode}
-            onChange={e => { setOtpCode(e.target.value); setOtpError(""); }}
-            onKeyDown={e => e.key === "Enter" && handleVerifyOtp()}
-            maxLength={6}
-          />
-        </div>
-        {otpError && <div className="co2-field-error">⚠ {otpError}</div>}
-        <button className="co2-cta-btn" onClick={handleVerifyOtp} disabled={verifyingOtp}>
-          {verifyingOtp ? "Verifying…" : "Verify & Place Order →"}
-        </button>
-        <div className="co2-otp-resend">
-          Didn't receive it?{" "}
-          <span onClick={() => { setStep("details"); window.recaptchaVerifier = null; }}>
-            Resend code
-          </span>
-        </div>
-      </div>
-    </div>
-  );
-
   // ── REVIEW STEP ──────────────────────────────────────────────────────────────
   if (step === "review") return (
     <div className="co2-page">
-      <div id="recaptcha-container" />
       <div className="co2-inner">
         <div className="co2-header">
           <button className="co2-back-btn" onClick={() => setStep("details")}>← Edit details</button>
@@ -151,10 +111,10 @@ function CheckoutDesktop({ setPage, cart, updateCartQty, removeFromCart, cartTot
               </div>
             </div>
 
-            <button className="co2-cta-btn" disabled={sendingOtp} onClick={handleSendOtp}>
-              {sendingOtp ? "Sending OTP…" : `Place Order — ${fmt(totalWithDelivery)}`}
+            <button className="co2-cta-btn" disabled={placingOrder} onClick={confirmOrder}>
+              {placingOrder ? "Placing Order…" : `Place Order — ${fmt(totalWithDelivery)}`}
             </button>
-            <div className="co2-secure-note">🔒 Phone verified via SMS before placing order</div>
+            <div className="co2-secure-note">📞 We'll message you directly to confirm this order</div>
           </div>
         </div>
       </div>
@@ -164,7 +124,6 @@ function CheckoutDesktop({ setPage, cart, updateCartQty, removeFromCart, cartTot
   // ── DETAILS STEP (default) ───────────────────────────────────────────────────
   return (
     <div className="co2-page">
-      <div id="recaptcha-container" />
       <div className="co2-inner">
 
         <div className="co2-progress">
@@ -320,7 +279,7 @@ function CheckoutDesktop({ setPage, cart, updateCartQty, removeFromCart, cartTot
             <button className="co2-cta-btn" disabled={cart.length === 0} onClick={handleContinue}>
               Review Order →
             </button>
-            <div className="co2-secure-note">🔒 Secured & verified via SMS</div>
+            <div className="co2-secure-note">📞 We'll message you to confirm your order</div>
           </div>
         </div>
       </div>

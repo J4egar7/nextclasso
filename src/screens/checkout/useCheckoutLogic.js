@@ -1,17 +1,12 @@
 import { useState } from "react";
 
-// All the real logic (validation, Firebase OTP, order placement) lives here
-// once, shared by both the desktop and mobile checkout UIs — so there's
-// only ever one source of truth, and no duplicated Firebase/reCAPTCHA state.
+// All the real logic (validation, order placement) lives here once,
+// shared by both the desktop and mobile checkout UIs.
 function useCheckoutLogic({ cart, cartTotal, placeOrder }) {
   const [form, setForm] = useState({ name: "", email: "", phone: "", address: "" });
   const [errors, setErrors] = useState({});
-  const [step, setStep] = useState("details"); // "details" | "review" | "otp" | "success"
-  const [otpCode, setOtpCode] = useState("");
-  const [otpError, setOtpError] = useState("");
-  const [confirmationResult, setConfirmationResult] = useState(null);
-  const [sendingOtp, setSendingOtp] = useState(false);
-  const [verifyingOtp, setVerifyingOtp] = useState(false);
+  const [step, setStep] = useState("details"); // "details" | "review" | "success"
+  const [placingOrder, setPlacingOrder] = useState(false);
   const [placedOrder, setPlacedOrder] = useState(null);
 
   const fmt = (n) => "PKR " + n.toLocaleString("en-PK");
@@ -45,47 +40,14 @@ function useCheckoutLogic({ cart, cartTotal, placeOrder }) {
     return true;
   };
 
-  const handleSendOtp = async () => {
-    setSendingOtp(true);
-    setOtpError("");
-
-    try {
-      const { RecaptchaVerifier, signInWithPhoneNumber } = await import("firebase/auth");
-      const { auth } = await import("../../firebase");
-
-      if (!window.recaptchaVerifier) {
-        window.recaptchaVerifier = new RecaptchaVerifier(auth, "recaptcha-container", { size: "invisible" });
-      }
-
-      const phoneWithCode = "+92" + form.phone.replace(/^0/, "");
-      const result = await signInWithPhoneNumber(auth, phoneWithCode, window.recaptchaVerifier);
-      setConfirmationResult(result);
-      setStep("otp");
-    } catch (err) {
-      console.error(err);
-      if (err.code === "auth/operation-not-allowed" || err.code === "auth/invalid-api-key") {
-        setPlacedOrder(placeOrder());
-        setStep("success");
-      } else {
-        setOtpError("Could not send OTP. Please check your number and try again.");
-      }
-    }
-    setSendingOtp(false);
-  };
-
-  const handleVerifyOtp = async () => {
-    if (otpCode.length < 4) { setOtpError("Please enter the full OTP code"); return; }
-    setVerifyingOtp(true);
-    setOtpError("");
-
-    try {
-      await confirmationResult.confirm(otpCode);
-      setPlacedOrder(placeOrder());
-      setStep("success");
-    } catch (err) {
-      setOtpError("Wrong code. Please check the SMS and try again.");
-    }
-    setVerifyingOtp(false);
+  // Places the order directly — no phone/OTP verification anymore.
+  // Orders are confirmed manually (a message to the customer) instead.
+  const confirmOrder = async () => {
+    setPlacingOrder(true);
+    const order = await placeOrder({ name: form.name, email: form.email, phone: form.phone, address: form.address });
+    setPlacedOrder(order);
+    setStep("success");
+    setPlacingOrder(false);
   };
 
   const delivery          = cartTotal >= 5000 ? 0 : 250;
@@ -96,9 +58,8 @@ function useCheckoutLogic({ cart, cartTotal, placeOrder }) {
 
   return {
     form, setField, errors, setErrors, step, setStep,
-    otpCode, setOtpCode, otpError, setOtpError,
-    sendingOtp, verifyingOtp, placedOrder,
-    fmt, getTheme, validate, handleContinue, handleSendOtp, handleVerifyOtp,
+    placingOrder, placedOrder,
+    fmt, getTheme, validate, handleContinue, confirmOrder,
     delivery, totalWithDelivery, itemCount, orderItemCount, orderTotal,
   };
 }

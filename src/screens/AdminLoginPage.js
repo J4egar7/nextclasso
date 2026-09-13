@@ -1,12 +1,10 @@
 import { useState } from "react";
-import { signInWithEmailAndPassword } from "firebase/auth";
-import { doc, getDoc } from "firebase/firestore";
-import { auth, db } from "../firebase.js";
+import { supabase } from "../lib/supabase.js";
 
 // No credentials live in this file anymore.
-// Admin status is decided server-side by Firestore: a user is an admin
-// only if a document exists at admins/{their-auth-uid}. Set that up
-// once in the Firebase console (see README-ADMIN-SETUP.md).
+// Admin status is decided server-side by Supabase: a user is an admin
+// only if a row exists in the `admins` table with their auth user id.
+// Set that up once in the Supabase dashboard — see SETUP-NOTES.md.
 function AdminLoginPage({ setPage, setUser }) {
   const [email, setEmail]       = useState("");
   const [password, setPassword] = useState("");
@@ -20,28 +18,39 @@ function AdminLoginPage({ setPage, setUser }) {
 
     setLoading(true);
     try {
-      const credential = await signInWithEmailAndPassword(auth, email.trim(), password);
-      const adminSnap = await getDoc(doc(db, "admins", credential.user.uid));
+      const { data, error: authError } = await supabase.auth.signInWithPassword({
+        email: email.trim(), password,
+      });
 
-      if (!adminSnap.exists()) {
-        await auth.signOut();
+      if (authError) {
+        if (authError.message.toLowerCase().includes("invalid login credentials")) {
+          setError("Invalid credentials. Please try again.");
+        } else if (authError.status === 429) {
+          setError("Too many attempts. Please wait a few minutes and try again.");
+        } else {
+          setError("Something went wrong: " + authError.message);
+        }
+        setLoading(false);
+        return;
+      }
+
+      const { data: adminRow } = await supabase
+        .from("admins")
+        .select("id")
+        .eq("id", data.user.id)
+        .maybeSingle();
+
+      if (!adminRow) {
+        await supabase.auth.signOut();
         setError("This account is not authorised for admin access.");
         setLoading(false);
         return;
       }
 
-      setUser({ name: "Admin", email: credential.user.email, uid: credential.user.uid, isAdmin: true });
+      setUser({ name: "Admin", email: data.user.email, uid: data.user.id, isAdmin: true });
       setPage("admin");
     } catch (e) {
-      if (e.code === "auth/wrong-password" || e.code === "auth/invalid-credential") {
-        setError("Invalid credentials. Please try again.");
-      } else if (e.code === "auth/user-not-found") {
-        setError("Invalid credentials. Please try again.");
-      } else if (e.code === "auth/too-many-requests") {
-        setError("Too many attempts. Please wait a few minutes and try again.");
-      } else {
-        setError("Something went wrong: " + e.message);
-      }
+      setError("Something went wrong: " + e.message);
     }
     setLoading(false);
   };

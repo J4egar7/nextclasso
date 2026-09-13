@@ -1,12 +1,19 @@
 import { useState, useEffect } from "react";
 import { WEIGHT_UNITS, CATEGORIES } from "../data/constants.js";
-import {
-  collection, addDoc, updateDoc, deleteDoc, doc, onSnapshot
-} from "firebase/firestore";
-import { ref, uploadBytes, getDownloadURL, deleteObject } from "firebase/storage";
-import { db, storage } from "../firebase.js";
+import { supabase } from "../lib/supabase.js";
 
 const blankForm = { name:"", brand:"", category:"Skincare", price:"", stock:"", description:"", weight:"", weightUnit:"g", images:[] };
+
+// DB rows are snake_case; the admin form/table use camelCase — same
+// mapping as StoreContext.js.
+function mapRowToProduct(row) {
+  return {
+    id: row.id, name: row.name, brand: row.brand, category: row.category,
+    price: row.price, priceNum: row.price_num, stock: row.stock,
+    description: row.description, weight: row.weight, weightUnit: row.weight_unit,
+    images: row.images || [],
+  };
+}
 
 function AdminPage({ setPage, user, setUser }) {
   const [view, setView] = useState("dashboard");
@@ -18,17 +25,26 @@ function AdminPage({ setPage, user, setUser }) {
   const [products, setProducts] = useState([]);
   const [loadingProducts, setLoadingProducts] = useState(true);
 
-  // Live-sync the product catalogue from Firestore — this is the single
-  // source of truth the storefront also reads from.
+  // Live-sync the product catalogue from Supabase — this is the single
+  // source of truth the storefront also reads from. Admin queries can
+  // select every column (including manufacturing_cost); the public
+  // storefront query in StoreContext.js deliberately doesn't.
   useEffect(() => {
-    const unsub = onSnapshot(collection(db, "products"), snap => {
-      setProducts(snap.docs.map(d => ({ id: d.id, ...d.data() })));
-      setLoadingProducts(false);
-    }, err => {
-      console.error(err);
-      setLoadingProducts(false);
-    });
-    return () => unsub();
+    const load = () => {
+      supabase.from("products").select("*").order("created_at", { ascending: false }).then(({ data, error }) => {
+        if (error) { console.error(error); setLoadingProducts(false); return; }
+        setProducts((data || []).map(mapRowToProduct));
+        setLoadingProducts(false);
+      });
+    };
+    load();
+
+    const channel = supabase
+      .channel("admin-products-changes")
+      .on("postgres_changes", { event: "*", schema: "public", table: "products" }, load)
+      .subscribe();
+
+    return () => supabase.removeChannel(channel);
   }, []);
 
   // Redirect to login if not an authenticated admin. Done in an effect
@@ -64,16 +80,17 @@ function AdminPage({ setPage, user, setUser }) {
     }
     setSaving(true);
     try {
-      // Upload any new local files to Storage; keep existing hosted URLs as-is
+      // Upload any new local files to Supabase Storage; keep existing hosted URLs as-is
       const uploadedUrls = [];
       for (const src of form.images) {
         if (src.startsWith("data:")) {
-          // Convert the newly-picked data URL back to a blob and upload it
           const blob = await (await fetch(src)).blob();
-          const path = `products/${editId || "new"}/${Date.now()}-${Math.random().toString(36).slice(2)}`;
-          const storageRef = ref(storage, path);
-          await uploadBytes(storageRef, blob);
-          uploadedUrls.push(await getDownloadURL(storageRef));
+          const ext = blob.type.split("/")[1] || "jpg";
+          const path = `${editId || "new"}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+          const { error: uploadError } = await supabase.storage.from("product-images").upload(path, blob);
+          if (uploadError) throw uploadError;
+          const { data: urlData } = supabase.storage.from("product-images").getPublicUrl(path);
+          uploadedUrls.push(urlData.publicUrl);
         } else {
           uploadedUrls.push(src); // already a hosted URL from a previous save
         }
@@ -84,20 +101,22 @@ function AdminPage({ setPage, user, setUser }) {
         brand: form.brand.trim(),
         category: form.category,
         price: form.price.trim(),
-        priceNum: parseInt(form.price.replace(/[^0-9]/g, "")) || 0,
+        price_num: parseInt(form.price.replace(/[^0-9]/g, "")) || 0,
         stock: parseInt(form.stock) || 0,
         description: form.description.trim(),
         weight: form.weight,
-        weightUnit: form.weightUnit,
+        weight_unit: form.weightUnit,
         images: uploadedUrls,
-        updatedAt: Date.now(),
+        updated_at: new Date().toISOString(),
       };
 
       if (editId) {
-        await updateDoc(doc(db, "products", editId), payload);
+        const { error: updateError } = await supabase.from("products").update(payload).eq("id", editId);
+        if (updateError) throw updateError;
         setSuccess("Product updated successfully!");
       } else {
-        await addDoc(collection(db, "products"), { ...payload, createdAt: Date.now() });
+        const { error: insertError } = await supabase.from("products").insert(payload);
+        if (insertError) throw insertError;
         setSuccess("Product added successfully!");
       }
 
@@ -120,11 +139,15 @@ function AdminPage({ setPage, user, setUser }) {
   const handleDelete = async (p) => {
     if (!window.confirm(`Delete "${p.name}"? This can't be undone.`)) return;
     try {
-      await deleteDoc(doc(db, "products", p.id));
+      const { error: deleteError } = await supabase.from("products").delete().eq("id", p.id);
+      if (deleteError) throw deleteError;
       // Best-effort cleanup of images in Storage
       for (const url of (p.images || [])) {
         try {
-          if (url.includes("firebasestorage")) await deleteObject(ref(storage, url));
+          if (url.includes("/product-images/")) {
+            const path = url.split("/product-images/")[1];
+            if (path) await supabase.storage.from("product-images").remove([path]);
+          }
         } catch { /* ignore individual cleanup failures */ }
       }
     } catch (e) {

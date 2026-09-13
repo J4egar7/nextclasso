@@ -126,3 +126,62 @@ doesn't require touching any code — it's entirely DNS + Vercel config:
 I can't register the domain or touch your DNS/Vercel dashboard for you (those need your
 login), but happy to double check your DNS records once you've added them, or troubleshoot
 if Vercel shows an error.
+
+## 6. Migrated from Firebase to Supabase
+
+Products, admin login, and orders now all run on Supabase instead of Firebase.
+Firebase has been fully removed from the project (the `firebase` package is
+gone from `package.json` — this also cut the install from 107+ packages down
+to 34, which should help page load speed).
+
+### What changed
+- **Products**: same live-sync behaviour as before (add/edit/delete in the
+  admin panel shows up on the storefront instantly), now backed by a
+  Postgres `products` table instead of a Firestore collection.
+- **Admin login**: now uses Supabase Auth instead of Firebase Auth. Same
+  security model as before — a user is only treated as an admin if a row
+  exists for them in the `admins` table (checked server-side via Row Level
+  Security, not just in the app's JavaScript).
+- **Product images**: now upload to Supabase Storage instead of Firebase
+  Storage.
+- **Orders are now real** — previously "placing an order" only saved to the
+  customer's own browser (localStorage), which meant you had no way to see
+  anyone's orders but your own. Every order now writes to a shared `orders`
+  table in Supabase, which the admin dashboard will read from once we build
+  it out. (The customer's device also still keeps a local copy for their
+  own "My Orders" page — that part didn't change.)
+- The schema already includes a `manufacturing_cost` column on products,
+  ready for the profit/revenue dashboard — that UI itself isn't built yet,
+  this phase was just the data foundation.
+
+### One-time setup you need to do
+
+1. **Create a Supabase project** at [supabase.com](https://supabase.com) if
+   you haven't already (free tier is plenty to start).
+
+2. **Run the schema**: Supabase Dashboard → SQL Editor → New Query → paste
+   in the entire contents of `supabase-schema.sql` (included in this
+   project) → Run. This creates the `products`, `admins`, and `orders`
+   tables, sets up Row Level Security so the right people can read/write
+   the right things, and creates a public storage bucket for product images.
+
+3. **Create your admin account**: Supabase Dashboard → Authentication →
+   Users → Add User. Use a real email and a strong password.
+
+4. **Mark that account as an admin**: Supabase Dashboard → Table Editor →
+   `admins` table → Insert Row. Set `id` to that user's UID (copy it from
+   the Authentication → Users list) and `email` to their email.
+
+5. **Get your API keys**: Supabase Dashboard → Project Settings → API.
+   You need the **Project URL** and the **anon public** key (not the
+   `service_role` key — that one should never be used in frontend code).
+
+6. **Set environment variables**:
+   - Locally: copy `.env.local.example` to `.env.local` and fill in the
+     two values from step 5.
+   - On Vercel: Project → Settings → Environment Variables → add
+     `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` with
+     the same values, then redeploy.
+
+That's it — login at `/admin` with the account from step 3, and adding a
+product should show up on the storefront within a second or two.

@@ -1,20 +1,19 @@
-import { useState, useRef } from "react";
+import { useState } from "react";
 
 function CheckoutMobile({ setPage, cart, updateCartQty, removeFromCart, cartTotal, logic }) {
   const {
-    form, setField, errors, setErrors, step, setStep,
-    otpCode, setOtpCode, otpError, setOtpError,
-    sendingOtp, verifyingOtp,
-    fmt, getTheme, validate, handleSendOtp, handleVerifyOtp,
+    form, setField, errors, setErrors,
+    fmt, getTheme, validate, confirmOrder, placingOrder,
     delivery, totalWithDelivery, itemCount, orderItemCount, orderTotal,
   } = logic;
 
   const [summaryOpen, setSummaryOpen] = useState(false);
-  const otpRefs = useRef([]);
+  const step = logic.step;
 
   // Mobile skips the separate "Review" screen entirely — everything lives
-  // on one scrollable page, so tapping the sticky CTA validates and goes
-  // straight to sending the OTP.
+  // on one scrollable page, so tapping the sticky CTA validates and places
+  // the order directly. No phone verification — orders are confirmed by
+  // messaging the customer directly instead.
   const handleMobileSubmit = async () => {
     const e = validate();
     if (Object.keys(e).length) {
@@ -24,24 +23,7 @@ function CheckoutMobile({ setPage, cart, updateCartQty, removeFromCart, cartTota
       return;
     }
     if (cart.length === 0) { setErrors({ name: "Your cart is empty" }); return; }
-    await handleSendOtp();
-  };
-
-  const handleOtpDigit = (idx, val) => {
-    const digit = val.replace(/[^0-9]/g, "").slice(-1);
-    const chars = otpCode.split("");
-    chars[idx] = digit || "";
-    const next = chars.join("").slice(0, 6);
-    setOtpCode(next);
-    setOtpError("");
-    if (digit && idx < 5) otpRefs.current[idx + 1]?.focus();
-  };
-
-  const handleOtpKeyDown = (idx, e) => {
-    if (e.key === "Backspace" && !otpCode[idx] && idx > 0) {
-      otpRefs.current[idx - 1]?.focus();
-    }
-    if (e.key === "Enter") handleVerifyOtp();
+    await confirmOrder();
   };
 
   // ── SUCCESS ──────────────────────────────────────────────────────────────────
@@ -67,49 +49,9 @@ function CheckoutMobile({ setPage, cart, updateCartQty, removeFromCart, cartTota
     </div>
   );
 
-  // ── OTP STEP ─────────────────────────────────────────────────────────────────
-  if (step === "otp") return (
-    <div className="com-page">
-      <div id="recaptcha-container" />
-      <div className="com-otp-wrap">
-        <button className="com-back-btn" onClick={() => setStep("details")}>← Back</button>
-        <div className="com-otp-icon">📱</div>
-        <h2 className="com-otp-title">Enter the code</h2>
-        <p className="com-otp-hint">
-          6-digit code sent to<br /><strong>{form.phone}</strong>
-        </p>
-        <div className="com-otp-boxes">
-          {Array.from({ length: 6 }).map((_, i) => (
-            <input
-              key={i}
-              ref={el => otpRefs.current[i] = el}
-              className="com-otp-box"
-              type="tel"
-              inputMode="numeric"
-              maxLength={1}
-              value={otpCode[i] || ""}
-              onChange={e => handleOtpDigit(i, e.target.value)}
-              onKeyDown={e => handleOtpKeyDown(i, e)}
-              autoFocus={i === 0}
-            />
-          ))}
-        </div>
-        {otpError && <div className="com-field-error" style={{ justifyContent: "center" }}>⚠ {otpError}</div>}
-        <button className="com-cta-btn" onClick={handleVerifyOtp} disabled={verifyingOtp}>
-          {verifyingOtp ? "Verifying…" : "Verify & Place Order"}
-        </button>
-        <div className="com-otp-resend">
-          Didn't receive it?{" "}
-          <span onClick={() => { setStep("details"); window.recaptchaVerifier = null; }}>Resend code</span>
-        </div>
-      </div>
-    </div>
-  );
-
   // ── SINGLE-PAGE FORM (details + review combined) ────────────────────────────
   return (
     <div className="com-page">
-      <div id="recaptcha-container" />
 
       <div className="com-topbar">
         <button className="com-back-btn" onClick={() => setPage("home")}>← Shop</button>
@@ -199,7 +141,7 @@ function CheckoutMobile({ setPage, cart, updateCartQty, removeFromCart, cartTota
               />
             </div>
             {errors.phone && <div className="com-field-error">⚠ {errors.phone}</div>}
-            <div className="com-hint">Verification code sent here</div>
+            <div className="com-hint">We'll message you here to confirm</div>
           </div>
 
           <div className="com-field">
@@ -234,8 +176,8 @@ function CheckoutMobile({ setPage, cart, updateCartQty, removeFromCart, cartTota
           <div className="com-sticky-total-label">Total</div>
           <div className="com-sticky-total-val">{fmt(totalWithDelivery)}</div>
         </div>
-        <button className="com-cta-btn com-sticky-cta" disabled={sendingOtp || cart.length === 0} onClick={handleMobileSubmit}>
-          {sendingOtp ? "Sending code…" : "Place Order"}
+        <button className="com-cta-btn com-sticky-cta" disabled={placingOrder || cart.length === 0} onClick={handleMobileSubmit}>
+          {placingOrder ? "Placing order…" : "Place Order"}
         </button>
       </div>
     </div>
