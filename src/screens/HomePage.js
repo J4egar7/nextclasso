@@ -407,11 +407,27 @@ function MobileBestsellers({ addToCart, toggleFavourite, isFav, openProduct, bes
    PAGE
    ============================================================ */
 function HomePage({ setPage, goToProducts, addToCart, toggleFavourite, isFav, openProduct, products }) {
-  // Curated for the homepage carousels — every product tagged "bestseller",
-  // capped at 12 (2 at a time x 6 pages on mobile). Used to be a static
-  // export from the hardcoded catalog; now derived from the live Supabase
-  // catalog so a newly-badged product shows up here automatically.
-  const bestsellerProducts = (products || []).filter(p => p.badge === "bestseller").slice(0, 12);
+  // Bestsellers for the homepage carousels — two layers, so this is never
+  // purely manual (which would sit empty on a fresh catalog until someone
+  // remembers to tag something) and never purely automatic (which would
+  // show nothing meaningful before any real sales exist, or worse, look
+  // arbitrary once they do):
+  //   1. Anything an admin has explicitly tagged "bestseller" in the
+  //      admin panel — this is the real backend control, and always
+  //      takes priority.
+  //   2. If that doesn't fill 12 slots, backfill with the top-selling
+  //      remaining products by REAL purchase count (never a fabricated
+  //      number) — but only ones with at least one actual purchase, so
+  //      a brand-new product never gets called a "bestseller" it hasn't
+  //      earned yet.
+  // If neither layer has anything, the section just doesn't render —
+  // see bestsellerProducts.length below.
+  const manuallyTagged = (products || []).filter(p => p.badge === "bestseller");
+  const autoFilled = (products || [])
+    .filter(p => p.badge !== "bestseller" && (p.purchases || 0) > 0)
+    .sort((a, b) => (b.purchases || 0) - (a.purchases || 0))
+    .slice(0, Math.max(0, 12 - manuallyTagged.length));
+  const bestsellerProducts = [...manuallyTagged, ...autoFilled].slice(0, 12);
   return (
     <div className="page page-enter">
             {/* SITE OPENING SALE BANNER */}
@@ -501,33 +517,37 @@ function HomePage({ setPage, goToProducts, addToCart, toggleFavourite, isFav, op
         ))}
       </div>
 
-      {/* BESTSELLERS — desktop carousel + mobile carousel, CSS controls which shows */}
-      <section className="section section-home">
-        <div className="section-header">
-          <div>
-            <div className="section-eyebrow">✦ Hand-Picked For You</div>
-            <h2 className="section-title">Bestselling <em>favourites</em></h2>
+      {/* BESTSELLERS — desktop carousel + mobile carousel, CSS controls which shows.
+          Doesn't render at all if there's nothing real to show yet — see
+          bestsellerProducts above (no fabricated placeholder content). */}
+      {bestsellerProducts.length > 0 && (
+        <section className="section section-home">
+          <div className="section-header">
+            <div>
+              <div className="section-eyebrow">✦ Hand-Picked For You</div>
+              <h2 className="section-title">Bestselling <em>favourites</em></h2>
+            </div>
           </div>
-        </div>
 
-        {/* Desktop: 4-up interactive carousel */}
-        <DesktopBestsellers
-          addToCart={addToCart}
-          toggleFavourite={toggleFavourite}
-          isFav={isFav}
-          openProduct={openProduct}
-          bestsellerProducts={bestsellerProducts}
-        />
+          {/* Desktop: 4-up interactive carousel */}
+          <DesktopBestsellers
+            addToCart={addToCart}
+            toggleFavourite={toggleFavourite}
+            isFav={isFav}
+            openProduct={openProduct}
+            bestsellerProducts={bestsellerProducts}
+          />
 
-        {/* Mobile: 2-up swipeable carousel */}
-        <MobileBestsellers
-          addToCart={addToCart}
-          toggleFavourite={toggleFavourite}
-          isFav={isFav}
-          openProduct={openProduct}
-          bestsellerProducts={bestsellerProducts}
-        />
-      </section>
+          {/* Mobile: 2-up swipeable carousel */}
+          <MobileBestsellers
+            addToCart={addToCart}
+            toggleFavourite={toggleFavourite}
+            isFav={isFav}
+            openProduct={openProduct}
+            bestsellerProducts={bestsellerProducts}
+          />
+        </section>
+      )}
 
       {/* BANNER SPLIT */}
       <div className="banner-split">
