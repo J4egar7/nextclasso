@@ -39,6 +39,12 @@ export function StoreProvider({ children }) {
   const [toast, setToast]                 = useState("");
   const [toastVisible, setToastVisible]   = useState(false);
   const [user, setUser]                   = useState(null);
+  // Was user null on first render because no one's logged in, or because
+  // we haven't finished checking for an existing session yet? Without
+  // this distinction, AdminPage would redirect to the login screen on
+  // every refresh even for an already-logged-in admin, since `user`
+  // starts null either way and the check below is async.
+  const [authChecked, setAuthChecked]     = useState(false);
   // The entire product catalog now lives in Supabase — this used to hold
   // only admin-added products, merged in each screen with a hardcoded
   // catalog import. That hardcoded catalog is gone; this is the full
@@ -91,6 +97,43 @@ export function StoreProvider({ children }) {
       .subscribe();
 
     return () => supabase.removeChannel(channel);
+  }, []);
+
+  // Restore an existing admin session on page load/refresh — without
+  // this, `user` starts null on every refresh (it's just React state,
+  // not tied to the actual Supabase Auth session), so a logged-in admin
+  // got bounced to the login screen on every reload even though their
+  // session was still valid.
+  useEffect(() => {
+    let cancelled = false;
+
+    const syncFromSession = async (session) => {
+      if (!session?.user) {
+        if (!cancelled) { setUser(null); setAuthChecked(true); }
+        return;
+      }
+      const { data: adminRow } = await supabase
+        .from("admins")
+        .select("id")
+        .eq("id", session.user.id)
+        .maybeSingle();
+      if (cancelled) return;
+      if (adminRow) {
+        setUser({ name: "Admin", email: session.user.email, uid: session.user.id, isAdmin: true });
+      } else {
+        setUser(null);
+      }
+      setAuthChecked(true);
+    };
+
+    supabase.auth.getSession().then(({ data }) => syncFromSession(data.session));
+
+    // Keep in sync across tabs / after token refresh / on sign-out.
+    const { data: authListener } = supabase.auth.onAuthStateChange((_event, session) => {
+      syncFromSession(session);
+    });
+
+    return () => { cancelled = true; authListener?.subscription?.unsubscribe(); };
   }, []);
 
   const showToast = useCallback((msg) => {
@@ -179,7 +222,7 @@ export function StoreProvider({ children }) {
   }, [cart, cartTotal]);
 
   const value = {
-    cart, favourites, recentOrders, toast, toastVisible, user, setUser,
+    cart, favourites, recentOrders, toast, toastVisible, user, setUser, authChecked,
     products, productsLoaded, cartOpen, setCartOpen, favOpen, setFavOpen,
     showToast, addToCart, removeFromCart, updateCartQty,
     toggleFavourite, isFav, cartTotal, cartCount, placeOrder,

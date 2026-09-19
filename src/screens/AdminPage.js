@@ -21,7 +21,7 @@ function mapRowToProduct(row) {
   };
 }
 
-function AdminPage({ setPage, user, setUser }) {
+function AdminPage({ setPage, user, setUser, authChecked }) {
   const [view, setView] = useState("dashboard");
   const [form, setForm] = useState(blankForm);
   const [success, setSuccess] = useState("");
@@ -30,6 +30,8 @@ function AdminPage({ setPage, user, setUser }) {
   const [saving, setSaving] = useState(false);
   const [products, setProducts] = useState([]);
   const [loadingProducts, setLoadingProducts] = useState(true);
+  const [orders, setOrders] = useState([]);
+  const [loadingOrders, setLoadingOrders] = useState(true);
 
   // Live-sync the product catalogue from Supabase — this is the single
   // source of truth the storefront also reads from. Admin queries can
@@ -53,12 +55,37 @@ function AdminPage({ setPage, user, setUser }) {
     return () => supabase.removeChannel(channel);
   }, []);
 
-  // Redirect to login if not an authenticated admin. Done in an effect
-  // (not during render) since setPage triggers real navigation now.
+  // Live-sync orders from Supabase — admins can read every order (RLS:
+  // orders_admin_read using is_admin()); customers/anon cannot.
   useEffect(() => {
-    if (!user?.isAdmin) setPage("admin-login");
-  }, [user, setPage]);
+    const load = () => {
+      supabase.from("orders").select("*").order("placed_at", { ascending: false }).then(({ data, error }) => {
+        if (error) { console.error(error); setLoadingOrders(false); return; }
+        setOrders(data || []);
+        setLoadingOrders(false);
+      });
+    };
+    load();
 
+    const channel = supabase
+      .channel("admin-orders-changes")
+      .on("postgres_changes", { event: "*", schema: "public", table: "orders" }, load)
+      .subscribe();
+
+    return () => supabase.removeChannel(channel);
+  }, []);
+
+  // Redirect to login only once we've actually finished checking for an
+  // existing session — otherwise a real logged-in admin gets bounced to
+  // login on every refresh, since `user` starts null either way while
+  // that async check is still in flight.
+  useEffect(() => {
+    if (authChecked && !user?.isAdmin) setPage("admin-login");
+  }, [user, authChecked, setPage]);
+
+  if (!authChecked) {
+    return <div style={{ padding: "120px 24px", textAlign: "center", color: "#999" }}>Loading…</div>;
+  }
   if (!user?.isAdmin) return null;
 
   const setField = (k,v) => setForm(f => ({...f, [k]:v}));
@@ -173,6 +200,28 @@ function AdminPage({ setPage, user, setUser }) {
   const stockBadge = (n) => n === 0 ? "out" : n < 5 ? "low" : "in";
   const stockLabel = (n) => n === 0 ? "Out of Stock" : n < 5 ? `Low (${n})` : `In Stock (${n})`;
 
+  const parsePrice = (str) => parseInt(String(str || "").replace(/[^0-9]/g, "")) || 0;
+  const fmtPKR = (n) => `PKR ${Math.round(n).toLocaleString()}`;
+
+  // Revenue: straightforward sum of what orders actually charged.
+  // Profit: revenue minus manufacturing_cost per item — looked up from
+  // the live product list (admin's own fetch includes manufacturing_cost,
+  // unlike the public storefront query). An item whose product has since
+  // been deleted, or was never in this table (a leftover from before the
+  // hardcoded catalog was retired, if any), has no known cost — it's
+  // counted in revenue but excluded from the cost side, since assuming a
+  // cost we don't actually know would just be a fabricated number.
+  const costById = Object.fromEntries(products.map(p => [String(p.id), p.manufacturing_cost || 0]));
+  const totalRevenue = orders.reduce((sum, o) => sum + (o.total || 0), 0);
+  const totalProfit = orders.reduce((sum, o) => {
+    const orderProfit = (o.items || []).reduce((s, item) => {
+      const cost = costById[String(item.product_id)];
+      if (cost === undefined) return s; // unknown cost — don't fabricate a number
+      return s + (parsePrice(item.price) - cost) * (item.qty || 1);
+    }, 0);
+    return sum + orderProfit;
+  }, 0);
+
   return (
     <div className="page page-enter">
       <div className="admin-layout">
@@ -184,6 +233,7 @@ function AdminPage({ setPage, user, setUser }) {
           </div>
           {[
             { id:"dashboard", icon:"📊", label:"Dashboard" },
+            { id:"orders",    icon:"🧾", label:"Orders" },
             { id:"add",       icon:"➕", label:"Add Product" },
             { id:"products",  icon:"📦", label:"All Products" },
           ].map(n => (
@@ -195,7 +245,7 @@ function AdminPage({ setPage, user, setUser }) {
           <button className="adm-nav-item" onClick={() => setPage("home")}>
             <span className="adm-nav-icon">🏠</span>Back to Store
           </button>
-          <button className="adm-nav-item" onClick={() => { setUser(null); setPage("home"); }}>
+          <button className="adm-nav-item" onClick={async () => { await supabase.auth.signOut(); setUser(null); setPage("home"); }}>
             <span className="adm-nav-icon">🚪</span>Log Out
           </button>
         </aside>
@@ -212,7 +262,20 @@ function AdminPage({ setPage, user, setUser }) {
               <div className="adm-page-sub">Overview of your CLASO product catalogue</div>
               <div className="adm-stats-grid">
                 {[
+                  { icon:"💰", val: fmtPKR(totalRevenue), label:"Total Revenue" },
+                  { icon:"📈", val: fmtPKR(totalProfit), label:"Total Profit" },
+                  { icon:"🧾", val: orders.length, label:"Total Orders" },
                   { icon:"📦", val: products.length, label:"Total Products" },
+                ].map(s => (
+                  <div key={s.label} className="adm-stat-card">
+                    <div className="adm-stat-icon">{s.icon}</div>
+                    <div className="adm-stat-val">{s.val}</div>
+                    <div className="adm-stat-label">{s.label}</div>
+                  </div>
+                ))}
+              </div>
+              <div className="adm-stats-grid">
+                {[
                   { icon:"✅", val: products.filter(p=>p.stock>0).length, label:"In Stock" },
                   { icon:"⚠️", val: products.filter(p=>p.stock>0&&p.stock<5).length, label:"Low Stock" },
                   { icon:"❌", val: products.filter(p=>p.stock===0).length, label:"Out of Stock" },
@@ -262,6 +325,54 @@ function AdminPage({ setPage, user, setUser }) {
                         <td style={{fontWeight:600}}>{p.price}</td>
                         <td><span className={`adm-stock-badge ${stockBadge(p.stock)}`}>{stockLabel(p.stock)}</span></td>
                         <td style={{color:"var(--adm-muted)",fontSize:"13px"}}>{p.weight ? `${p.weight} ${p.weightUnit}` : "—"}</td>
+                      </tr>
+                    ))}</tbody>
+                  </table>
+                )}
+              </div>
+            </>
+          )}
+
+          {/* ORDERS */}
+          {view === "orders" && (
+            <>
+              <div className="adm-page-title">Orders</div>
+              <div className="adm-page-sub">Every order placed through the storefront</div>
+              <div className="adm-table-card">
+                <div className="adm-table-head">
+                  <div style={{display:"flex",alignItems:"center"}}>
+                    <span className="adm-table-title">All Orders</span>
+                    <span className="adm-table-count">{orders.length}</span>
+                  </div>
+                </div>
+                {loadingOrders ? (
+                  <div className="adm-empty"><div className="adm-empty-text">Loading…</div></div>
+                ) : orders.length === 0 ? (
+                  <div className="adm-empty">
+                    <div className="adm-empty-icon">🧾</div>
+                    <div className="adm-empty-text">No orders yet</div>
+                    <div className="adm-empty-sub">Orders placed at checkout will show up here</div>
+                  </div>
+                ) : (
+                  <table className="adm-table">
+                    <thead><tr>
+                      <th>Customer</th><th>Phone</th><th>Items</th><th>Total</th><th>Status</th><th>Placed</th>
+                    </tr></thead>
+                    <tbody>{orders.map(o => (
+                      <tr key={o.id}>
+                        <td>
+                          <div className="adm-product-name">{o.customer_name || "—"}</div>
+                          <div className="adm-product-brand" style={{maxWidth:"220px",whiteSpace:"normal"}}>{o.customer_address}</div>
+                        </td>
+                        <td style={{color:"var(--adm-muted)",fontSize:"13px"}}>{o.customer_phone || "—"}</td>
+                        <td style={{color:"var(--adm-muted)",fontSize:"13px"}}>
+                          {(o.items || []).map((it,i) => (
+                            <div key={i}>{it.qty}× {it.name}</div>
+                          ))}
+                        </td>
+                        <td style={{fontWeight:600}}>{fmtPKR(o.total || 0)}</td>
+                        <td><span className={`adm-stock-badge ${o.status === "delivered" ? "in" : o.status === "cancelled" ? "out" : "low"}`}>{o.status || "pending"}</span></td>
+                        <td style={{color:"var(--adm-muted)",fontSize:"13px"}}>{o.placed_at ? new Date(o.placed_at).toLocaleString() : "—"}</td>
                       </tr>
                     ))}</tbody>
                   </table>

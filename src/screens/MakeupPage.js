@@ -92,7 +92,9 @@ function MakeupPage({ addToCart, goToProducts, toggleFavourite, isFav, openProdu
   const ProductCard = ({ p }) => (
     <div className="make-product-card" onClick={() => openProduct({ ...p, _prevPage: "makeup" })}>
       <div className="make-img" style={{ background: p.bg }}>
-        <span style={{fontSize:'52px'}}>{p.emoji}</span>
+        {p.images?.[0]
+          ? <img src={p.images[0]} alt={p.name} style={{ width:"100%", height:"100%", objectFit:"cover", position:"absolute", inset:0 }} />
+          : <span style={{fontSize:'52px'}}>{p.emoji}</span>}
         {p.badge && <div className="make-badge">{p.badge}</div>}
         <button className="product-wish-btn" onClick={e => { e.stopPropagation(); toggleFavourite({ ...p, _pageTag: "makeup" }); }}>{isFav(p.id) ? "❤️" : "🤍"}</button>
       </div>

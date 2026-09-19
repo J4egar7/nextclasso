@@ -56,11 +56,13 @@ function ProductDetailPage({ product: p, setPage, addToCart, toggleFavourite, is
 
   const fmt = n => "PKR " + n.toLocaleString("en-PK");
 
-  const thumbSlots = [
-    { emoji: p.emoji, bg: p.bg || "linear-gradient(135deg,#F5EDD8,#EDD9B4)" },
-    { emoji: p.emoji, bg: "linear-gradient(135deg,#EEE8E0,#E0D8CC)" },
-    { emoji: "✨",    bg: "linear-gradient(135deg,#F0F0EC,#E4E4DC)" },
-  ];
+  const thumbSlots = (p.images && p.images.length > 0)
+    ? p.images.map(url => ({ image: url, bg: p.bg || "linear-gradient(135deg,#F5EDD8,#EDD9B4)" }))
+    : [
+        { emoji: p.emoji, bg: p.bg || "linear-gradient(135deg,#F5EDD8,#EDD9B4)" },
+        { emoji: p.emoji, bg: "linear-gradient(135deg,#EEE8E0,#E0D8CC)" },
+        { emoji: "✨",    bg: "linear-gradient(135deg,#F0F0EC,#E4E4DC)" },
+      ];
 
   const submitReview = () => {
     if (!reviewStars || !reviewText.trim()) return;
@@ -125,7 +127,9 @@ function ProductDetailPage({ product: p, setPage, addToCart, toggleFavourite, is
         {/* LEFT — Images */}
         <div className="pdp-image-area">
           <div className="pdp-main-img" style={{ background: thumbSlots[activeThumb].bg }}>
-            <span>{thumbSlots[activeThumb].emoji}</span>
+            {thumbSlots[activeThumb].image
+              ? <img src={thumbSlots[activeThumb].image} alt={p.name} style={{ width:"100%", height:"100%", objectFit:"cover" }} />
+              : <span>{thumbSlots[activeThumb].emoji}</span>}
             {p.badge && (
               <div className="pdp-badge" style={{ position:"absolute", top:"20px", left:"20px", background: isMakeup ? "var(--make-primary)" : "var(--skin-primary)", color:"white" }}>
                 {p.badge}
@@ -138,7 +142,9 @@ function ProductDetailPage({ product: p, setPage, addToCart, toggleFavourite, is
                 className={"pdp-thumb" + (activeThumb===i ? " active" : "")}
                 style={{ background: t.bg }}
                 onClick={() => setActiveThumb(i)}>
-                {t.emoji}
+                {t.image
+                  ? <img src={t.image} alt="" style={{ width:"100%", height:"100%", objectFit:"cover" }} />
+                  : t.emoji}
               </div>
             ))}
           </div>
@@ -337,7 +343,9 @@ function ProductDetailPage({ product: p, setPage, addToCart, toggleFavourite, is
             {relatedFallback.map(r => (
               <div key={r.id} className="pdp-related-card" onClick={() => openProduct ? openProduct({ ...r, _prevPage: prevPage }) : setPage(prevPage)}>
                 <div className="pdp-related-img" style={{ background: r.bg }}>
-                  <span style={{fontSize:"40px"}}>{r.emoji}</span>
+                  {r.images?.[0]
+                    ? <img src={r.images[0]} alt={r.name} style={{ width:"100%", height:"100%", objectFit:"cover" }} />
+                    : <span style={{fontSize:"40px"}}>{r.emoji}</span>}
                 </div>
                 <div className="pdp-related-brand">{r.brand}</div>
                 <div className="pdp-related-name">{r.name}</div>

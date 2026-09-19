@@ -6,12 +6,13 @@ import { pageToPath } from "../../src/lib/routes.js";
 
 export default function AdminClient() {
   const router = useRouter();
-  const { user, setUser } = useStore();
+  const { user, setUser, authChecked } = useStore();
   return (
     <AdminPage
       setPage={(id) => router.push(pageToPath(id))}
       user={user}
       setUser={setUser}
+      authChecked={authChecked}
     />
   );
 }

@@ -203,7 +203,9 @@ function DesktopBestsellers({ addToCart, toggleFavourite, isFav, openProduct, be
                       onClick={() => { pauseAuto(); openProduct({ ...p, _prevPage: "home" }); }}
                     >
                       <div className="dt-card-img" style={{ background: p.bg }}>
-                        <span style={{ fontSize: "52px" }}>{p.emoji}</span>
+                        {p.images?.[0]
+                          ? <img src={p.images[0]} alt={p.name} style={{ width:"100%", height:"100%", objectFit:"cover", position:"absolute", inset:0 }} />
+                          : <span style={{ fontSize: "52px" }}>{p.emoji}</span>}
                         {p.badge && <div className={`product-badge ${p.badge === "new" ? "new" : ""}`}>{p.badge}</div>}
                         <button
                           className="product-wish-btn"
@@ -367,7 +369,9 @@ function MobileBestsellers({ addToCart, toggleFavourite, isFav, openProduct, bes
                     </button>
                     <div className="mb-card" onClick={() => { pauseAuto(); openProduct({ ...p, _prevPage: "home" }); }}>
                       <div className="mb-card-img" style={{ background: p.bg }}>
-                        <span style={{ fontSize: "40px" }}>{p.emoji}</span>
+                        {p.images?.[0]
+                          ? <img src={p.images[0]} alt={p.name} style={{ width:"100%", height:"100%", objectFit:"cover", position:"absolute", inset:0 }} />
+                          : <span style={{ fontSize: "40px" }}>{p.emoji}</span>}
                         <button className="product-wish-btn" onClick={e => { e.stopPropagation(); pauseAuto(); toggleFavourite(p); }}>{isFav(p.id) ? "❤️" : "🤍"}</button>
                       </div>
                       <div className="mb-card-info">
