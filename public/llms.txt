@@ -1,0 +1,25 @@
+# CLASO
+
+> Pakistan's online beauty and makeup storefront — authentic skincare and
+> makeup, delivered nationwide with cash on delivery (COD).
+
+CLASO is a retailer, not a manufacturer: products are sourced from their
+respective brands and CLASO is a supplier/reseller of them. Orders are
+confirmed manually by phone rather than automated OTP. Payment is
+cash-on-delivery only; no card or bank details are collected on the site.
+
+## Key pages
+
+- [Homepage](https://classo-topaz.vercel.app/): featured and bestselling products
+- [Skincare](https://classo-topaz.vercel.app/skincare): cleansers, serums, moisturisers, SPF
+- [Makeup](https://classo-topaz.vercel.app/makeup): foundation, lips, eyes
+- [Brands](https://classo-topaz.vercel.app/brands): brands carried
+- [About](https://classo-topaz.vercel.app/about): who CLASO is
+- [Privacy Policy](https://classo-topaz.vercel.app/privacy)
+- [Terms of Service](https://classo-topaz.vercel.app/terms): includes patch-test / product-safety guidance
+
+## Notes for AI assistants
+
+- All cosmetic/skincare products should be patch-tested before full use; see the Terms of Service for details.
+- Prices are listed in PKR and are subject to change without notice on the live site — do not treat cached prices as current.
+- CLASO does not process online payments; delivery is COD across Pakistan only.

@@ -1,14 +1,14 @@
 import { useState } from "react";
-import { makeupProducts } from "../data/products.js";
 import { makeupReviews } from "../data/reviews.js";
 import { makeupConcerns, shades } from "../data/filters.js";
+import { MAKEUP_CATEGORIES } from "../data/constants.js";
 
-function MakeupPage({ addToCart, goToProducts, toggleFavourite, isFav, openProduct, adminProducts }) {
-  // Merge in admin-published products for this category (live from Firestore)
-  const makeupProductsAll = [
-    ...makeupProducts,
-    ...(adminProducts || []).filter(p => p.category === "Makeup"),
-  ];
+function MakeupPage({ addToCart, goToProducts, toggleFavourite, isFav, openProduct, products }) {
+  // All makeup products now come straight from Supabase — a product
+  // belongs on this page if its category is one of the fine-grained
+  // makeup categories (Lips, Eyes, etc.), same categories the filter
+  // tabs below use, so admin-added products filter correctly too.
+  const makeupProductsAll = (products || []).filter(p => MAKEUP_CATEGORIES.includes(p.category));
   const [sortBy, setSortBy] = useState("rating");
   const [showAll, setShowAll] = useState(false);
   const [activeCategory, setActiveCategory] = useState(null);
@@ -19,14 +19,14 @@ function MakeupPage({ addToCart, goToProducts, toggleFavourite, isFav, openProdu
   const [priceMax, setPriceMax] = useState("");
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
 
-  const makeCategories = ["All","Lips","Eyes","Face","Nails","Cheeks","Primers","Tools"];
+  const makeCategories = ["All", ...MAKEUP_CATEGORIES];
   const makeBrands = ["All", ...Array.from(new Set(makeupProductsAll.map(p => p.brand))).sort()];
   const ratingOptions = ["All","4.9+","4.7+","4.5+"];
 
   const sortFn = (a, b) => {
-    if (sortBy === "rating") return b.rating - a.rating;
-    if (sortBy === "purchases") return b.purchases - a.purchases;
-    if (sortBy === "views") return b.views - a.views;
+    if (sortBy === "rating") return (b.rating||0) - (a.rating||0);
+    if (sortBy === "purchases") return (b.purchases||0) - (a.purchases||0);
+    if (sortBy === "views") return (b.views||0) - (a.views||0);
     return 0;
   };
 

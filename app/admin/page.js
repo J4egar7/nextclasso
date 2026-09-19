@@ -1,19 +1,10 @@
-"use client";
+import AdminClient from "../_client/AdminClient.js";
 
-import { useRouter } from "next/navigation";
-import AdminPage from "../../src/screens/AdminPage.js";
-import { useStore } from "../../src/lib/StoreContext.js";
-import { pageToPath } from "../../src/lib/routes.js";
+export const metadata = {
+  title: "Admin",
+  robots: { index: false, follow: false },
+};
 
 export default function Page() {
-  const router = useRouter();
-  const { user, setUser } = useStore();
-
-  return (
-    <AdminPage
-      setPage={(id) => router.push(pageToPath(id))}
-      user={user}
-      setUser={setUser}
-    />
-  );
+  return <AdminClient />;
 }

@@ -1,14 +1,14 @@
 import { useState } from "react";
-import { skincareProducts } from "../data/products.js";
 import { skincareReviews } from "../data/reviews.js";
 import { skincareConcerns } from "../data/filters.js";
+import { SKINCARE_CATEGORIES } from "../data/constants.js";
 
-function SkincarePage({ addToCart, goToProducts, toggleFavourite, isFav, openProduct, adminProducts }) {
-  // Merge in admin-published products for this category (live from Firestore)
-  const skincareProductsAll = [
-    ...skincareProducts,
-    ...(adminProducts || []).filter(p => p.category === "Skincare"),
-  ];
+function SkincarePage({ addToCart, goToProducts, toggleFavourite, isFav, openProduct, products }) {
+  // All skincare products now come straight from Supabase — a product
+  // belongs on this page if its category is one of the fine-grained
+  // skincare categories (Cleansers, Serums, etc.), same categories the
+  // filter tabs below use, so admin-added products filter correctly too.
+  const skincareProductsAll = (products || []).filter(p => SKINCARE_CATEGORIES.includes(p.category));
   const [sortBy, setSortBy] = useState("rating");
   const [showAll, setShowAll] = useState(false);
   const [activeConcern, setActiveConcern] = useState(null);
@@ -19,14 +19,14 @@ function SkincarePage({ addToCart, goToProducts, toggleFavourite, isFav, openPro
   const [priceMax, setPriceMax] = useState("");
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
 
-  const skinCategories = ["All","Cleansers","Serums","Moisturisers","SPF","Masks","Eye Care","Toners","Oils"];
+  const skinCategories = ["All", ...SKINCARE_CATEGORIES];
   const skinBrands = ["All", ...Array.from(new Set(skincareProductsAll.map(p => p.brand))).sort()];
   const ratingOptions = ["All","4.9+","4.7+","4.5+"];
 
   const sortFn = (a, b) => {
-    if (sortBy === "rating") return b.rating - a.rating;
-    if (sortBy === "purchases") return b.purchases - a.purchases;
-    if (sortBy === "views") return b.views - a.views;
+    if (sortBy === "rating") return (b.rating||0) - (a.rating||0);
+    if (sortBy === "purchases") return (b.purchases||0) - (a.purchases||0);
+    if (sortBy === "views") return (b.views||0) - (a.views||0);
     return 0;
   };
 

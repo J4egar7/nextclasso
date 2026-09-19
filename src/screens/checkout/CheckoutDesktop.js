@@ -43,7 +43,7 @@ function CheckoutDesktop({ setPage, cart, updateCartQty, removeFromCart, cartTot
         <div className="co2-header">
           <button className="co2-back-btn" onClick={() => setStep("details")}>← Edit details</button>
           <h1 className="co2-title">Review Order</h1>
-          <p className="co2-subtitle">Confirm everything looks right before we verify your phone</p>
+          <p className="co2-subtitle">Confirm everything looks right before you place your order</p>
         </div>
 
         <div className="co2-review-grid">

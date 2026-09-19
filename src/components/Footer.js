@@ -36,7 +36,13 @@ function Footer({ setPage, goToProducts }) {
         </div>
       </div>
       <div className="footer-bottom">
-        <div className="footer-copy">© 2026 CLASO. All rights reserved. Made with 💄 in Pakistan.</div>
+        <div>
+          <div className="footer-copy">© 2026 CLASO. All rights reserved. Made with 💄 in Pakistan.</div>
+          <div className="footer-legal">
+            <span onClick={() => setPage("privacy")}>Privacy Policy</span>
+            <span onClick={() => setPage("terms")}>Terms of Service</span>
+          </div>
+        </div>
         <div className="footer-socials">
           {["📸","🎵","💬","🐦"].map((s,i) => (
             <div key={i} className="social-btn">{s}</div>

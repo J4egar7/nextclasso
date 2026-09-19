@@ -1,22 +1,12 @@
-"use client";
+import CheckoutClient from "../_client/CheckoutClient.js";
 
-import { useRouter } from "next/navigation";
-import CheckoutPage from "../../src/screens/CheckoutPage.js";
-import { useStore } from "../../src/lib/StoreContext.js";
-import { pageToPath } from "../../src/lib/routes.js";
+export const metadata = {
+  title: "Checkout",
+  description: "Complete your CLASO order — cash on delivery across Pakistan.",
+  alternates: { canonical: "/checkout" },
+  robots: { index: false, follow: false },
+};
 
 export default function Page() {
-  const router = useRouter();
-  const { cart, updateCartQty, removeFromCart, cartTotal, placeOrder } = useStore();
-
-  return (
-    <CheckoutPage
-      setPage={(id) => router.push(pageToPath(id))}
-      cart={cart}
-      updateCartQty={updateCartQty}
-      removeFromCart={removeFromCart}
-      cartTotal={cartTotal}
-      placeOrder={placeOrder}
-    />
-  );
+  return <CheckoutClient />;
 }

@@ -1,18 +1,12 @@
-"use client";
+import OrdersClient from "../_client/OrdersClient.js";
 
-import { useRouter } from "next/navigation";
-import OrdersPage from "../../src/screens/OrdersPage.js";
-import { useStore } from "../../src/lib/StoreContext.js";
-import { pageToPath } from "../../src/lib/routes.js";
+export const metadata = {
+  title: "Your Orders",
+  description: "View your recent CLASO orders and delivery status.",
+  alternates: { canonical: "/orders" },
+  robots: { index: false, follow: false },
+};
 
 export default function Page() {
-  const router = useRouter();
-  const { recentOrders } = useStore();
-
-  return (
-    <OrdersPage
-      setPage={(id) => router.push(pageToPath(id))}
-      recentOrders={recentOrders}
-    />
-  );
+  return <OrdersClient />;
 }

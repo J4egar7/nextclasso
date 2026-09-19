@@ -1,15 +1,11 @@
-"use client";
+import BrandsClient from "../_client/BrandsClient.js";
 
-import { useRouter } from "next/navigation";
-import BrandsPage from "../../src/screens/BrandsPage.js";
-import { pageToPath } from "../../src/lib/routes.js";
+export const metadata = {
+  title: "Shop by Brand",
+  description: "Browse authentic beauty and skincare brands available on CLASO, delivered across Pakistan.",
+  alternates: { canonical: "/brands" },
+};
 
 export default function Page() {
-  const router = useRouter();
-  return (
-    <BrandsPage
-      setPage={(id) => router.push(pageToPath(id))}
-      goToProducts={(sub) => router.push(pageToPath(sub))}
-    />
-  );
+  return <BrandsClient />;
 }

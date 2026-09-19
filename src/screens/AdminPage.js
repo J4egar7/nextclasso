@@ -1,17 +1,23 @@
 import { useState, useEffect } from "react";
-import { WEIGHT_UNITS, CATEGORIES } from "../data/constants.js";
+import { WEIGHT_UNITS, CATEGORIES, BADGES, BG_PRESETS } from "../data/constants.js";
 import { supabase } from "../lib/supabase.js";
 
-const blankForm = { name:"", brand:"", category:"Skincare", price:"", stock:"", description:"", weight:"", weightUnit:"g", images:[] };
+const blankForm = {
+  name:"", brand:"", category:"Cleansers", price:"", oldPrice:"", stock:"",
+  description:"", weight:"", weightUnit:"g", images:[],
+  emoji:"", bg:"", badge:"",
+};
 
 // DB rows are snake_case; the admin form/table use camelCase — same
 // mapping as StoreContext.js.
 function mapRowToProduct(row) {
   return {
     id: row.id, name: row.name, brand: row.brand, category: row.category,
-    price: row.price, priceNum: row.price_num, stock: row.stock,
+    price: row.price, priceNum: row.price_num, old: row.old_price, stock: row.stock,
     description: row.description, weight: row.weight, weightUnit: row.weight_unit,
     images: row.images || [],
+    emoji: row.emoji, bg: row.bg, badge: row.badge,
+    rating: row.rating, reviews: row.reviews, purchases: row.purchases, views: row.views,
   };
 }
 
@@ -102,11 +108,15 @@ function AdminPage({ setPage, user, setUser }) {
         category: form.category,
         price: form.price.trim(),
         price_num: parseInt(form.price.replace(/[^0-9]/g, "")) || 0,
+        old_price: form.oldPrice.trim() || null,
         stock: parseInt(form.stock) || 0,
         description: form.description.trim(),
         weight: form.weight,
         weight_unit: form.weightUnit,
         images: uploadedUrls,
+        emoji: form.emoji.trim(),
+        bg: form.bg,
+        badge: form.badge,
         updated_at: new Date().toISOString(),
       };
 
@@ -131,7 +141,11 @@ function AdminPage({ setPage, user, setUser }) {
   };
 
   const handleEdit = (p) => {
-    setForm({ name:p.name, brand:p.brand, category:p.category, price:p.price, stock:String(p.stock), description:p.description, weight:p.weight||"", weightUnit:p.weightUnit||"g", images:p.images || [] });
+    setForm({
+      name:p.name, brand:p.brand, category:p.category, price:p.price, oldPrice:p.old||"",
+      stock:String(p.stock), description:p.description, weight:p.weight||"", weightUnit:p.weightUnit||"g",
+      images:p.images || [], emoji:p.emoji||"", bg:p.bg||"", badge:p.badge||"",
+    });
     setEditId(p.id);
     setView("add");
   };
@@ -236,7 +250,7 @@ function AdminPage({ setPage, user, setUser }) {
                         <td>
                           <div className="adm-product-info">
                             <div className="adm-product-thumb">
-                              {p.images?.[0] ? <img src={p.images[0]} alt="" style={{width:"100%",height:"100%",objectFit:"cover",borderRadius:"10px"}} /> : "🛍️"}
+                              {p.images?.[0] ? <img src={p.images[0]} alt="" style={{width:"100%",height:"100%",objectFit:"cover",borderRadius:"10px"}} /> : (p.emoji || "🛍️")}
                             </div>
                             <div>
                               <div className="adm-product-name">{p.name}</div>
@@ -304,9 +318,51 @@ function AdminPage({ setPage, user, setUser }) {
                     <label className="adm-field-label">Price (PKR) *</label>
                     <input className="adm-input" placeholder="e.g. PKR 4,500" value={form.price} onChange={e=>setField("price",e.target.value)} />
                   </div>
+                  <div className="adm-field">
+                    <label className="adm-field-label">Original Price (optional)</label>
+                    <input className="adm-input" placeholder="e.g. PKR 5,500 — shown crossed out" value={form.oldPrice} onChange={e=>setField("oldPrice",e.target.value)} />
+                  </div>
                   <div className="adm-field span-2">
                     <label className="adm-field-label">Description</label>
                     <textarea className="adm-textarea" placeholder="Write a short product description…" value={form.description} onChange={e=>setField("description",e.target.value)} />
+                  </div>
+                </div>
+              </div>
+
+              {/* DISPLAY */}
+              <div className="adm-form-card">
+                <div className="adm-form-title"><span>🎨</span> Display</div>
+                <div style={{fontSize:"12px",color:"var(--adm-muted)",marginBottom:"14px"}}>
+                  Until real product photography is added, cards show an emoji on a coloured background instead.
+                </div>
+                <div className="adm-form-grid">
+                  <div className="adm-field">
+                    <label className="adm-field-label">Emoji</label>
+                    <input className="adm-input" placeholder="e.g. 💄" value={form.emoji} onChange={e=>setField("emoji",e.target.value)} maxLength={4} />
+                  </div>
+                  <div className="adm-field">
+                    <label className="adm-field-label">Badge (optional)</label>
+                    <select className="adm-select" value={form.badge} onChange={e=>setField("badge",e.target.value)}>
+                      {BADGES.map(b=><option key={b} value={b}>{b || "None"}</option>)}
+                    </select>
+                  </div>
+                  <div className="adm-field span-2">
+                    <label className="adm-field-label">Card Background</label>
+                    <div style={{display:"flex",gap:"8px",flexWrap:"wrap"}}>
+                      {BG_PRESETS.map(preset => (
+                        <div
+                          key={preset.value}
+                          onClick={()=>setField("bg",preset.value)}
+                          title={preset.label}
+                          style={{
+                            width:"36px", height:"36px", borderRadius:"10px", cursor:"pointer",
+                            background:preset.value,
+                            border: form.bg===preset.value ? "3px solid var(--adm-accent, #E05C14)" : "2px solid transparent",
+                            boxSizing:"border-box",
+                          }}
+                        />
+                      ))}
+                    </div>
                   </div>
                 </div>
               </div>
@@ -372,7 +428,7 @@ function AdminPage({ setPage, user, setUser }) {
                         <td>
                           <div className="adm-product-info">
                             <div className="adm-product-thumb">
-                              {p.images?.[0] ? <img src={p.images[0]} alt="" style={{width:"100%",height:"100%",objectFit:"cover",borderRadius:"10px"}} /> : "🛍️"}
+                              {p.images?.[0] ? <img src={p.images[0]} alt="" style={{width:"100%",height:"100%",objectFit:"cover",borderRadius:"10px"}} /> : (p.emoji || "🛍️")}
                             </div>
                             <div>
                               <div className="adm-product-name">{p.name}</div>

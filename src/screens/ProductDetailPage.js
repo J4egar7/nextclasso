@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { productReviews } from "../data/reviews.js";
 import { skinTones } from "../data/filters.js";
-import { skincareProducts, makeupProducts } from "../data/products.js";
+import { SKINCARE_CATEGORIES, MAKEUP_CATEGORIES } from "../data/constants.js";
 
 function StarRating({ value = 5, size = 16, color = "#C9A96E" }) {
   // Renders partial-fill stars (e.g. 4.6) instead of rounding down to whole stars
@@ -18,7 +18,7 @@ function StarRating({ value = 5, size = 16, color = "#C9A96E" }) {
   );
 }
 
-function ProductDetailPage({ product: p, setPage, addToCart, toggleFavourite, isFav, prevPage, recentOrders, openProduct }) {
+function ProductDetailPage({ product: p, setPage, addToCart, toggleFavourite, isFav, prevPage, recentOrders, openProduct, products }) {
   const [qty, setQty] = useState(1);
   const [activeThumb, setActiveThumb] = useState(0);
   const [reviewStars, setReviewStars] = useState(0);
@@ -45,7 +45,12 @@ function ProductDetailPage({ product: p, setPage, addToCart, toggleFavourite, is
   const oldNum = p.old ? parseInt((p.old||"").replace(/[^0-9]/g,"")) : 0;
   const pctOff = oldNum && priceNum ? Math.round(100 - (priceNum/oldNum)*100) : 0;
 
-  const pool = isMakeup ? makeupProducts : skincareProducts;
+  // "Related products" pool — same makeup/skincare section this product
+  // belongs to, drawn from the live Supabase catalog rather than a
+  // hardcoded array.
+  const pool = (products || []).filter(x =>
+    isMakeup ? MAKEUP_CATEGORIES.includes(x.category) : SKINCARE_CATEGORIES.includes(x.category)
+  );
   const related = pool.filter(x => x.id !== p.id && x.category === p.category).slice(0,4);
   const relatedFallback = related.length ? related : pool.filter(x => x.id !== p.id).slice(0,4);
 
@@ -83,6 +88,29 @@ function ProductDetailPage({ product: p, setPage, addToCart, toggleFavourite, is
 
   return (
     <div className="pdp-page">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "Product",
+            name: p.name,
+            brand: { "@type": "Brand", name: p.brand },
+            description: p.desc || `${p.brand} ${p.name}, available on CLASO.`,
+            aggregateRating: p.rating ? {
+              "@type": "AggregateRating",
+              ratingValue: p.rating,
+              reviewCount: p.reviews || 1,
+            } : undefined,
+            offers: {
+              "@type": "Offer",
+              priceCurrency: "PKR",
+              price: p.priceNum || (typeof p.price === "string" ? p.price.replace(/[^\d]/g, "") : p.price),
+              availability: "https://schema.org/InStock",
+            },
+          }).replace(/</g, "\\u003c"),
+        }}
+      />
       <div className="pdp-breadcrumb">
         <span onClick={() => setPage("home")}>Home</span> /{" "}
         <span onClick={() => setPage(prevPage)}>{backLabel}</span> /{" "}
@@ -143,7 +171,7 @@ function ProductDetailPage({ product: p, setPage, addToCart, toggleFavourite, is
           </div>
 
           <div className="pdp-divider" />
-          <p className="pdp-desc">{p.desc || "A beautifully crafted formula developed with the finest globally-sourced ingredients. Rigorously tested by dermatologists and verified for quality."}</p>
+          <p className="pdp-desc">{p.desc || "A carefully selected formula from a trusted brand, sourced and sold by CLASO."}</p>
 
           {isMakeup && (
             <div className="skin-tone-row">
@@ -204,6 +232,18 @@ function ProductDetailPage({ product: p, setPage, addToCart, toggleFavourite, is
             {["Free Returns","Sealed & Tracked","Authentic Guaranteed","Fast Dispatch"].map(t => (
               <span key={t} className="pdp-tag-pill">✓ {t}</span>
             ))}
+          </div>
+
+          {/* Patch-test safety notice — rendered from the shared product template,
+              so it appears automatically on every product page (hardcoded or
+              admin/Supabase-added) without needing to be set per-product. */}
+          <div className="pdp-patch-notice">
+            <span className="pdp-patch-icon">⚠️</span>
+            <span>
+              <strong>Patch test recommended.</strong> Apply a small amount to your inner
+              forearm and wait 24–48 hours before full use. Discontinue if irritation occurs.
+              See our <a href="/terms">Terms of Service</a> for full product safety information.
+            </span>
           </div>
         </div>
       </div>

@@ -1,18 +1,10 @@
-"use client";
+import AdminLoginClient from "../../_client/AdminLoginClient.js";
 
-import { useRouter } from "next/navigation";
-import AdminLoginPage from "../../../src/screens/AdminLoginPage.js";
-import { useStore } from "../../../src/lib/StoreContext.js";
-import { pageToPath } from "../../../src/lib/routes.js";
+export const metadata = {
+  title: "Admin Login",
+  robots: { index: false, follow: false },
+};
 
 export default function Page() {
-  const router = useRouter();
-  const { setUser } = useStore();
-
-  return (
-    <AdminLoginPage
-      setPage={(id) => router.push(pageToPath(id))}
-      setUser={setUser}
-    />
-  );
+  return <AdminLoginClient />;
 }

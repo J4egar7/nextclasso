@@ -34,14 +34,28 @@ const cormorant = Cormorant_Garamond({
 });
 
 export const metadata = {
-  title: "CLASO — Pakistan's Beauty & Makeup Storefront",
+  title: {
+    default: "CLASO — Pakistan's Beauty & Makeup Storefront",
+    template: "%s — CLASO",
+  },
   description: "Shop authentic skincare, makeup and beauty essentials, delivered across Pakistan. Cash on delivery available.",
   metadataBase: new URL("https://classo-topaz.vercel.app"),
+  alternates: { canonical: "/" },
   openGraph: {
     title: "CLASO — Pakistan's Beauty & Makeup Storefront",
     description: "Shop authentic skincare, makeup and beauty essentials, delivered across Pakistan.",
     type: "website",
+    url: "https://classo-topaz.vercel.app",
+    siteName: "CLASO",
+    images: [{ url: "/og-image.jpg", width: 1200, height: 630, alt: "CLASO — Pakistan's Beauty & Makeup Storefront" }],
   },
+  twitter: {
+    card: "summary_large_image",
+    title: "CLASO — Pakistan's Beauty & Makeup Storefront",
+    description: "Shop authentic skincare, makeup and beauty essentials, delivered across Pakistan.",
+    images: ["/og-image.jpg"],
+  },
+  robots: { index: true, follow: true },
 };
 
 // Without this, mobile browsers assume a ~980px desktop-width page and
@@ -53,9 +67,23 @@ export const viewport = {
 };
 
 export default function RootLayout({ children }) {
+  const orgSchema = {
+    "@context": "https://schema.org",
+    "@type": "OnlineStore",
+    name: "CLASO",
+    url: "https://classo-topaz.vercel.app",
+    description: "Pakistan's online beauty and makeup storefront — authentic skincare, makeup, and beauty essentials with cash-on-delivery.",
+    areaServed: "PK",
+    paymentAccepted: "Cash on Delivery",
+  };
+
   return (
     <html lang="en" className={`${playfair.variable} ${dmSans.variable} ${bebas.variable} ${cormorant.variable}`}>
       <body>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(orgSchema).replace(/</g, "\\u003c") }}
+        />
         <StoreProvider>
           <Shell>{children}</Shell>
         </StoreProvider>

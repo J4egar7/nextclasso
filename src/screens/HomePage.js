@@ -1,5 +1,4 @@
 import { Fragment, useState, useEffect, useRef } from "react";
-import { bestsellerProducts } from "../data/products.js";
 import { reviews } from "../data/reviews.js";
 
 /* ============================================================
@@ -125,7 +124,7 @@ const PROGRESS_TICK_MS   = 60;
 /* ============================================================
    DESKTOP: 4-up carousel with sticky skin panel on the right
    ============================================================ */
-function DesktopBestsellers({ addToCart, toggleFavourite, isFav, openProduct, startPage = 0 }) {
+function DesktopBestsellers({ addToCart, toggleFavourite, isFav, openProduct, bestsellerProducts, startPage = 0 }) {
   const CARDS_PER_PAGE = 4;
   const totalPages = Math.ceil(bestsellerProducts.length / CARDS_PER_PAGE);
 
@@ -271,7 +270,7 @@ function DesktopBestsellers({ addToCart, toggleFavourite, isFav, openProduct, st
 /* ============================================================
    MOBILE: 2-up carousel (original, untouched)
    ============================================================ */
-function MobileBestsellers({ addToCart, toggleFavourite, isFav, openProduct }) {
+function MobileBestsellers({ addToCart, toggleFavourite, isFav, openProduct, bestsellerProducts }) {
   const [pairIndex,   setPairIndex]   = useState(0);
   const [subIndex,    setSubIndex]    = useState(0);
   const [galleryTab,  setGalleryTab]  = useState(0);
@@ -407,7 +406,12 @@ function MobileBestsellers({ addToCart, toggleFavourite, isFav, openProduct }) {
 /* ============================================================
    PAGE
    ============================================================ */
-function HomePage({ setPage, goToProducts, addToCart, toggleFavourite, isFav, openProduct }) {
+function HomePage({ setPage, goToProducts, addToCart, toggleFavourite, isFav, openProduct, products }) {
+  // Curated for the homepage carousels — every product tagged "bestseller",
+  // capped at 12 (2 at a time x 6 pages on mobile). Used to be a static
+  // export from the hardcoded catalog; now derived from the live Supabase
+  // catalog so a newly-badged product shows up here automatically.
+  const bestsellerProducts = (products || []).filter(p => p.badge === "bestseller").slice(0, 12);
   return (
     <div className="page page-enter">
             {/* SITE OPENING SALE BANNER */}
@@ -512,6 +516,7 @@ function HomePage({ setPage, goToProducts, addToCart, toggleFavourite, isFav, op
           toggleFavourite={toggleFavourite}
           isFav={isFav}
           openProduct={openProduct}
+          bestsellerProducts={bestsellerProducts}
         />
 
         {/* Mobile: 2-up swipeable carousel */}
@@ -520,6 +525,7 @@ function HomePage({ setPage, goToProducts, addToCart, toggleFavourite, isFav, op
           toggleFavourite={toggleFavourite}
           isFav={isFav}
           openProduct={openProduct}
+          bestsellerProducts={bestsellerProducts}
         />
       </section>
 

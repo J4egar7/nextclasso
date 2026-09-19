@@ -1,41 +1,42 @@
-"use client";
+import ProductDetailClient from "../../_client/ProductDetailClient.js";
+import { supabase } from "../../../src/lib/supabase.js";
 
-import { useRouter } from "next/navigation";
-import { useParams, useSearchParams } from "next/navigation";
-import ProductDetailPage from "../../../src/screens/ProductDetailPage.js";
-import { useStore } from "../../../src/lib/StoreContext.js";
-import { pageToPath } from "../../../src/lib/routes.js";
-import { allProducts } from "../../../src/data/products.js";
+export async function generateMetadata({ params }) {
+  const { id } = await params;
 
-export default function Page() {
-  const router = useRouter();
-  const params = useParams();
-  const searchParams = useSearchParams();
-  const { addToCart, toggleFavourite, isFav, recentOrders, adminProducts } = useStore();
-
-  const allProductsWithAdmin = [...allProducts, ...adminProducts];
-  const product = allProductsWithAdmin.find(p => String(p.id) === String(params.id));
-  const prevPage = searchParams.get("from") || "home";
+  // Server-side read of the public columns only (same set as the
+  // client-side storefront query, and the only columns anon can read —
+  // see the column-privilege grant in supabase-schema.sql).
+  const { data: product } = await supabase
+    .from("products")
+    .select("id, name, brand, description")
+    .eq("id", id)
+    .single();
 
   if (!product) {
-    return (
-      <div style={{ padding: "120px 24px", textAlign: "center" }}>
-        <h2>Product not found</h2>
-        <p>It may have been removed, or the link is incorrect.</p>
-      </div>
-    );
+    return {
+      title: "Product",
+      alternates: { canonical: `/product/${id}` },
+    };
   }
 
-  return (
-    <ProductDetailPage
-      product={product}
-      setPage={(id) => router.push(pageToPath(id))}
-      addToCart={addToCart}
-      toggleFavourite={toggleFavourite}
-      isFav={isFav}
-      prevPage={product._prevPage || prevPage}
-      recentOrders={recentOrders}
-      openProduct={(p) => router.push(`/product/${p.id}?from=${p._prevPage || prevPage}`)}
-    />
-  );
+  const title = `${product.name} — ${product.brand}`;
+  const description = product.description
+    ? `${product.description} Shop ${product.brand} ${product.name} on CLASO, delivered across Pakistan with cash on delivery.`
+    : `Shop ${product.brand} ${product.name} on CLASO, delivered across Pakistan with cash on delivery.`;
+
+  return {
+    title,
+    description,
+    alternates: { canonical: `/product/${product.id}` },
+    openGraph: {
+      title,
+      description,
+      type: "website",
+    },
+  };
+}
+
+export default function Page() {
+  return <ProductDetailClient />;
 }

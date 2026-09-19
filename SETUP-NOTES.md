@@ -185,3 +185,60 @@ to 34, which should help page load speed).
 
 That's it — login at `/admin` with the account from step 3, and adding a
 product should show up on the storefront within a second or two.
+
+## ⚠️ If you already ran the schema before September 2026
+
+Three real security/functionality issues were found and fixed in
+`supabase-schema.sql`'s "SECURITY FIXES" section (bottom of the file):
+
+1. **`manufacturing_cost` was readable by anyone** holding the public anon
+   key, regardless of what columns the app's own queries asked for — Row
+   Level Security controls which rows a query sees, not which columns.
+2. **Guest checkout couldn't actually save orders to Supabase at all.**
+   Every order was silently falling back to localStorage-only, so
+   real customer orders never reached the admin dashboard.
+3. **Order totals were trusted as sent by the browser** — anyone could
+   edit their cart in devtools and submit a real product list with a
+   fabricated total.
+
+If you set up your project before this fix, run just the "SECURITY FIXES"
+section of `supabase-schema.sql` again on your live project (Dashboard →
+SQL Editor → New Query → paste from `-- SECURITY FIXES` to the end of the
+file → Run). It's written to be safe to re-run and doesn't touch existing
+data. New projects following the steps above already get it as part of
+step 2.
+
+## 🗂️ Hardcoded product catalog retired (September 2026)
+
+The site used to run on a hybrid setup — a hardcoded catalog in
+`src/data/products.js` alongside whatever products an admin added in
+Supabase. That hardcoded file is gone; **every product now lives in
+Supabase**, including the original catalog, which is seeded by the
+"CATALOG MIGRATION" section at the bottom of `supabase-schema.sql`.
+
+If you already have a live project, run that section on it once
+(same place as above — SQL Editor → paste from `-- CATALOG MIGRATION`
+to the end of the file → Run). It will:
+
+- add the new columns product cards need (`emoji`, `bg`, `badge`,
+  `rating`, `reviews`, `purchases`, `views`, `old_price`)
+- widen `products.id` to `text` if it's still the original `uuid` type,
+  so it can hold the original catalog's simple ids ("1", "2", ...) —
+  existing admin-added products keep their ids unchanged, just stored
+  as text now
+- seed the 55 original catalog products, using `on conflict do nothing`
+  so it will never overwrite anything you've already edited
+
+Two things worth knowing:
+
+- The admin category dropdown used to offer broad buckets ("Skincare",
+  "Makeup") that didn't actually match the fine-grained categories
+  (Cleansers, Serums, Lips, Eyes, ...) the Skincare/Makeup pages filter
+  and tab by — so an admin-added product could only ever show up under
+  "All", never a specific tab. That's fixed: the dropdown now offers
+  the real fine-grained categories directly.
+- New products you add from now on start with no rating, no review
+  count, and zero purchases/views — there's no field in the admin form
+  to set these, on purpose. They're meant to reflect real store
+  activity as it happens, not a number typed in at creation time.
+

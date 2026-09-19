@@ -1,3 +1,40 @@
 # https://www.robotstxt.org/robotstxt.html
+
+# Standard search engines - full access, but keep admin/checkout/orders
+# (private/no-value-to-index pages) out of the crawl.
 User-agent: *
-Disallow:
+Allow: /
+Disallow: /admin
+Disallow: /checkout
+Disallow: /orders
+
+# AI assistants that browse and cite sources on a user's behalf are welcome -
+# helpful for people asking an AI where to buy something.
+User-agent: GPTBot
+Allow: /
+Disallow: /admin
+Disallow: /checkout
+Disallow: /orders
+
+User-agent: ClaudeBot
+Allow: /
+Disallow: /admin
+Disallow: /checkout
+Disallow: /orders
+
+User-agent: PerplexityBot
+Allow: /
+Disallow: /admin
+Disallow: /checkout
+Disallow: /orders
+
+# Bulk AI-training crawlers (as opposed to on-demand browsing/citation bots
+# above) are blocked - product copy and photography here aren't offered for
+# training use.
+User-agent: CCBot
+Disallow: /
+
+User-agent: Google-Extended
+Disallow: /
+
+Sitemap: https://classo-topaz.vercel.app/sitemap.xml
