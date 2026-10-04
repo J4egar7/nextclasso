@@ -4682,3 +4682,85 @@ code {
 }
 .pdp-patch-icon { font-size: 16px; line-height: 1.4; }
 .pdp-patch-notice a { color: var(--skin-primary); text-decoration: underline; }
+
+/* ===== HELP PAGES (Returns / Contact / FAQ) + CATEGORY BROWSE ===== */
+.legal-link {
+  color: var(--about-secondary);
+  text-decoration: underline;
+  cursor: pointer;
+}
+.contact-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 18px;
+  margin-bottom: 12px;
+}
+.contact-card {
+  background: var(--about-light);
+  border: 1px solid rgba(26,8,0,0.08);
+  border-radius: 18px;
+  padding: 24px;
+}
+.contact-card-icon { font-size: 28px; margin-bottom: 10px; }
+.contact-card-title {
+  font-family: var(--font-playfair), serif;
+  font-size: 20px;
+  color: var(--about-dark);
+  margin-bottom: 6px;
+}
+.contact-card p { margin-bottom: 12px; }
+.contact-card-link {
+  font-weight: 600;
+  color: var(--about-primary) !important;
+  word-break: break-all;
+}
+.faq-list { display: flex; flex-direction: column; gap: 12px; }
+.faq-item {
+  background: var(--about-light);
+  border: 1px solid rgba(26,8,0,0.08);
+  border-radius: 14px;
+  padding: 0 20px;
+}
+.faq-item summary {
+  cursor: pointer;
+  padding: 18px 0;
+  font-weight: 600;
+  font-size: 16px;
+  color: var(--about-dark);
+  list-style: none;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+}
+.faq-item summary::-webkit-details-marker { display: none; }
+.faq-item summary::after {
+  content: "+";
+  font-size: 22px;
+  color: var(--about-primary);
+  flex-shrink: 0;
+}
+.faq-item[open] summary::after { content: "\2212"; }
+.faq-item p { margin-bottom: 12px; }
+.faq-item[open] { padding-bottom: 6px; }
+
+.category-browse { min-height: 70vh; padding-top: 140px; }
+.category-blurb { margin-top: 12px; color: rgba(28,15,20,0.55); max-width: 520px; line-height: 1.6; }
+.category-empty {
+  text-align: center;
+  padding: 60px 20px;
+  max-width: 480px;
+  margin: 0 auto;
+}
+.category-empty-title {
+  font-family: var(--font-playfair), serif;
+  font-size: 24px;
+  color: var(--skin-dark);
+  margin-bottom: 10px;
+}
+.category-empty p { color: rgba(28,15,20,0.55); line-height: 1.6; margin-bottom: 24px; }
+.category-empty-actions { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+.category-empty-alt { background: transparent; color: var(--skin-primary); border: 1.5px solid var(--skin-primary); }
+@media (max-width: 768px) {
+  .category-browse { padding-top: 110px; }
+}

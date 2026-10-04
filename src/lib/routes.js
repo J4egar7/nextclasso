@@ -13,6 +13,11 @@ export const pageToPath = (id) => {
     case "admin-login": return "/admin/login";
     case "privacy":     return "/privacy";
     case "terms":       return "/terms";
+    case "fragrances":  return "/fragrances";
+    case "hair-care":   return "/hair-care";
+    case "returns":     return "/returns";
+    case "contact":     return "/contact";
+    case "faq":         return "/faq";
     default:            return "/";
   }
 };
@@ -31,5 +36,10 @@ export const pathToPage = (pathname) => {
   if (pathname.startsWith("/product")) return "product";
   if (pathname.startsWith("/privacy")) return "privacy";
   if (pathname.startsWith("/terms")) return "terms";
+  if (pathname.startsWith("/fragrances")) return "fragrances";
+  if (pathname.startsWith("/hair-care")) return "hair-care";
+  if (pathname.startsWith("/returns")) return "returns";
+  if (pathname.startsWith("/contact")) return "contact";
+  if (pathname.startsWith("/faq")) return "faq";
   return "home";
 };

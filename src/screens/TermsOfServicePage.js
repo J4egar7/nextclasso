@@ -6,7 +6,7 @@ function TermsOfServicePage() {
 
       <p>
         These Terms of Service ("Terms") form a legally binding agreement between you and
-        CLASO ("we", "us", "our") governing your use of classo-topaz.vercel.app (the "Site")
+        CLASO ("we", "us", "our") governing your use of nextclasso.vercel.app (the "Site")
         and any order you place through it. By browsing the Site or placing an order, you
         agree to these Terms. Under the Electronic Transactions Ordinance, 2002, electronic
         records and communications (including your order and our confirmation of it) are

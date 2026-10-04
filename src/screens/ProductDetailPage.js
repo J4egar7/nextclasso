@@ -33,7 +33,7 @@ function ProductDetailPage({ product: p, setPage, addToCart, toggleFavourite, is
 
   const isMakeup = prevPage === "makeup";
   const hasPurchased = recentOrders && recentOrders.some(o => o.id === p.id);
-  const backLabel = prevPage === "makeup" ? "Makeup" : prevPage === "home" ? "Home" : "Skincare";
+  const backLabel = ({ makeup: "Makeup", home: "Home", fragrances: "Fragrances", "hair-care": "Hair Care" })[prevPage] || "Skincare";
 
   const primaryColor = isMakeup ? "var(--make-primary)" : "var(--skin-primary)";
   const addBtnBg     = isMakeup

@@ -6,7 +6,7 @@ function PrivacyPolicyPage() {
 
       <p>
         This Privacy Policy explains what personal information CLASO ("we", "us", "our")
-        collects through classo-topaz.vercel.app (the "Site"), why we collect it, how it is
+        collects through nextclasso.vercel.app (the "Site"), why we collect it, how it is
         stored, and the choices and rights you have. It is written to comply with Pakistan's
         applicable legal framework, including the Electronic Transactions Ordinance, 2002
         (which gives electronic records and communications legal recognition), the Prevention

@@ -37,4 +37,4 @@ Disallow: /
 User-agent: Google-Extended
 Disallow: /
 
-Sitemap: https://classo-topaz.vercel.app/sitemap.xml
+Sitemap: https://nextclasso.vercel.app/sitemap.xml

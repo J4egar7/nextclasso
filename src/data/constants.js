@@ -12,9 +12,8 @@ const WEIGHT_UNITS = ["g","ml","fl oz","oz","kg","L"];
 
 const SKINCARE_CATEGORIES = ["Cleansers","Serums","Moisturisers","SPF","Masks","Eye Care","Toners","Oils"];
 const MAKEUP_CATEGORIES = ["Lips","Eyes","Face","Nails","Cheeks","Primers","Tools"];
-// Items that don't fit either browse page yet (no dedicated route for them
-// currently) — still storable/orderable, just won't appear in a category
-// grid until a page for them exists.
+// Shown on their own pages: "Fragrance" on /fragrances and "Hair & Body" on
+// /hair-care (not on the Skincare or Makeup browse pages).
 const OTHER_CATEGORIES = ["Fragrance","Hair & Body"];
 
 const CATEGORIES = [...SKINCARE_CATEGORIES, ...MAKEUP_CATEGORIES, ...OTHER_CATEGORIES];

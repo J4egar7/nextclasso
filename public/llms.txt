@@ -10,13 +10,18 @@ cash-on-delivery only; no card or bank details are collected on the site.
 
 ## Key pages
 
-- [Homepage](https://classo-topaz.vercel.app/): featured and bestselling products
-- [Skincare](https://classo-topaz.vercel.app/skincare): cleansers, serums, moisturisers, SPF
-- [Makeup](https://classo-topaz.vercel.app/makeup): foundation, lips, eyes
-- [Brands](https://classo-topaz.vercel.app/brands): brands carried
-- [About](https://classo-topaz.vercel.app/about): who CLASO is
-- [Privacy Policy](https://classo-topaz.vercel.app/privacy)
-- [Terms of Service](https://classo-topaz.vercel.app/terms): includes patch-test / product-safety guidance
+- [Homepage](https://nextclasso.vercel.app/): featured and bestselling products
+- [Skincare](https://nextclasso.vercel.app/skincare): cleansers, serums, moisturisers, SPF
+- [Makeup](https://nextclasso.vercel.app/makeup): foundation, lips, eyes
+- [Fragrances](https://nextclasso.vercel.app/fragrances): perfumes and body mists
+- [Hair Care](https://nextclasso.vercel.app/hair-care): hair and body care
+- [Brands](https://nextclasso.vercel.app/brands): brands carried
+- [About](https://nextclasso.vercel.app/about): who CLASO is
+- [Returns](https://nextclasso.vercel.app/returns): returns and refunds
+- [FAQ](https://nextclasso.vercel.app/faq)
+- [Contact](https://nextclasso.vercel.app/contact)
+- [Privacy Policy](https://nextclasso.vercel.app/privacy)
+- [Terms of Service](https://nextclasso.vercel.app/terms): includes patch-test / product-safety guidance
 
 ## Notes for AI assistants
 

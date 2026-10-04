@@ -6,9 +6,9 @@ import { supabase } from "../src/lib/supabase.js";
 export const dynamic = "force-dynamic";
 
 export default async function sitemap() {
-  const base = "https://classo-topaz.vercel.app";
+  const base = "https://nextclasso.vercel.app";
 
-  const staticRoutes = ["", "/about", "/brands", "/skincare", "/makeup"].map((path) => ({
+  const staticRoutes = ["", "/about", "/brands", "/skincare", "/makeup", "/fragrances", "/hair-care", "/returns", "/contact", "/faq"].map((path) => ({
     url: `${base}${path}`,
     lastModified: new Date(),
     changeFrequency: path === "" ? "daily" : "weekly",
