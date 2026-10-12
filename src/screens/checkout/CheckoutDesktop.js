@@ -1,3 +1,4 @@
+import ItemThumb from "../../components/ItemThumb.js";
 function CheckoutDesktop({ setPage, cart, updateCartQty, removeFromCart, cartTotal, logic }) {
   const {
     form, setField, errors, step, setStep,
@@ -64,7 +65,7 @@ function CheckoutDesktop({ setPage, cart, updateCartQty, removeFromCart, cartTot
                   const unit  = parseInt((item.price || "").replace(/[^0-9]/g, "")) || 0;
                   return (
                     <div key={item.id} className={`co2-item ${theme}`}>
-                      <div className="co2-item-emoji">{item.emoji || "🛍️"}</div>
+                      <div className="co2-item-emoji"><ItemThumb item={item} /></div>
                       <div className="co2-item-body">
                         <div className="co2-item-name">{item.name}</div>
                         <div className="co2-item-brand">{item.brand}</div>
@@ -159,6 +160,7 @@ function CheckoutDesktop({ setPage, cart, updateCartQty, removeFromCart, cartTot
                 <input
                   className={`co2-input ${errors.name ? "error" : ""}`}
                   placeholder="e.g. Ayesha Khan"
+                  autoComplete="name"
                   value={form.name}
                   onChange={e => setField("name", e.target.value)}
                 />
@@ -171,11 +173,13 @@ function CheckoutDesktop({ setPage, cart, updateCartQty, removeFromCart, cartTot
                   className={`co2-input ${errors.email ? "error" : ""}`}
                   type="email"
                   placeholder="you@example.com"
+                  autoComplete="email"
+                  inputMode="email"
                   value={form.email}
                   onChange={e => setField("email", e.target.value)}
                 />
                 {errors.email && <div className="co2-field-error">⚠ {errors.email}</div>}
-                <div className="co2-hint">Order confirmation will be sent here</div>
+                <div className="co2-hint">Only used for your order</div>
               </div>
 
               <div className="co2-field">
@@ -186,18 +190,19 @@ function CheckoutDesktop({ setPage, cart, updateCartQty, removeFromCart, cartTot
                     className={`co2-input co2-phone-input ${errors.phone ? "error" : ""}`}
                     type="tel"
                     placeholder="03XXXXXXXXX"
+                    autoComplete="tel"
                     value={form.phone}
                     onChange={e => setField("phone", e.target.value)}
                   />
                 </div>
                 {errors.phone && <div className="co2-field-error">⚠ {errors.phone}</div>}
-                <div className="co2-hint">A verification code will be sent here</div>
+                <div className="co2-hint">We may call or message you here to confirm your order</div>
               </div>
 
               <div className="co2-field">
                 <label className="co2-label">Delivery Address</label>
                 <textarea
-                  className={`co2-textarea ${errors.address ? "error" : ""}`}
+                  autoComplete="street-address" className={`co2-textarea ${errors.address ? "error" : ""}`}
                   placeholder="House/flat no., street, area, city…"
                   value={form.address}
                   onChange={e => setField("address", e.target.value)}
@@ -229,7 +234,7 @@ function CheckoutDesktop({ setPage, cart, updateCartQty, removeFromCart, cartTot
                     const unit  = parseInt((item.price || "").replace(/[^0-9]/g, "")) || 0;
                     return (
                       <div key={item.id} className={`co2-item ${theme}`}>
-                        <div className="co2-item-emoji">{item.emoji || "🛍️"}</div>
+                        <div className="co2-item-emoji"><ItemThumb item={item} /></div>
                         <div className="co2-item-body">
                           <div className="co2-item-name">{item.name}</div>
                           <div className="co2-item-brand">{item.brand}</div>

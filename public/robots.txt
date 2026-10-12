@@ -7,6 +7,7 @@ Allow: /
 Disallow: /admin
 Disallow: /checkout
 Disallow: /orders
+Disallow: /search
 
 # AI assistants that browse and cite sources on a user's behalf are welcome -
 # helpful for people asking an AI where to buy something.
@@ -15,18 +16,21 @@ Allow: /
 Disallow: /admin
 Disallow: /checkout
 Disallow: /orders
+Disallow: /search
 
 User-agent: ClaudeBot
 Allow: /
 Disallow: /admin
 Disallow: /checkout
 Disallow: /orders
+Disallow: /search
 
 User-agent: PerplexityBot
 Allow: /
 Disallow: /admin
 Disallow: /checkout
 Disallow: /orders
+Disallow: /search
 
 # Bulk AI-training crawlers (as opposed to on-demand browsing/citation bots
 # above) are blocked - product copy and photography here aren't offered for

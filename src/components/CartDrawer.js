@@ -1,3 +1,4 @@
+import ItemThumb from "./ItemThumb.js";
 
 function CartDrawer({ cart, removeFromCart, updateCartQty, cartTotal, onClose, onCheckout }) {
   const getTheme = (item) => {
@@ -35,7 +36,7 @@ function CartDrawer({ cart, removeFromCart, updateCartQty, cartTotal, onClose, o
                 const unitPrice = parseInt((item.price||"").replace(/[^0-9]/g,""))||0;
                 return (
                   <div key={item.id} className={`cart-item ${theme}`}>
-                    <div className="cart-item-emoji">{item.emoji || "🛍️"}</div>
+                    <div className="cart-item-emoji"><ItemThumb item={item} /></div>
                     <div className="cart-item-body">
                       <div className="cart-item-brand">{item.brand || "CLASO"}</div>
                       <div className="cart-item-name">{item.name}</div>

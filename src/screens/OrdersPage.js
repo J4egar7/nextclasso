@@ -1,3 +1,4 @@
+import ItemThumb from "../components/ItemThumb.js";
 function OrdersPage({ setPage, recentOrders }) {
   // Defensive: older/malformed saved data (e.g. from before this feature
   // existed) shouldn't crash the page — just skip anything that doesn't
@@ -50,8 +51,8 @@ function OrdersPage({ setPage, recentOrders }) {
                   <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
                     {order.items.map((item, i) => (
                       <div key={i} style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-                        <div style={{ width: "40px", height: "40px", borderRadius: "10px", background: item.bg || "rgba(255,255,255,0.05)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "20px", flexShrink: 0 }}>
-                          {item.emoji || "🛍️"}
+                        <div style={{ width: "40px", height: "40px", borderRadius: "10px", background: item.bg || "rgba(255,255,255,0.05)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "20px", flexShrink: 0, overflow: "hidden" }}>
+                          <ItemThumb item={item} />
                         </div>
                         <div style={{ flex: 1, minWidth: 0 }}>
                           <div style={{ fontSize: "13px", color: "white", fontWeight: 600, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{item.name}</div>

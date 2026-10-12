@@ -1,5 +1,6 @@
 import { Fragment, useState, useEffect, useRef } from "react";
-import { reviews } from "../data/reviews.js";
+import Link from "next/link";
+import NewsletterForm from "../components/NewsletterForm.js";
 
 /* ============================================================
    SHARED: Before/After comparison slider
@@ -89,7 +90,9 @@ function SkinPanel({ product, galleryTab, setGalleryTab, onInteract, onSwipeProd
         <div key={animKey.current} className={`mb-swipe-anim ${swipeDir === 1 ? "from-right" : swipeDir === -1 ? "from-left" : ""}`}>
           {galleryTab === 0 && (
             <div className="mb-skin-tile" style={{ background: product.bg }}>
-              <span style={{ fontSize: isMobile ? "64px" : "96px" }}>{product.emoji}</span>
+              {product.images?.[0]
+                ? <img src={product.images[0]} alt={product.name} style={{ width: "100%", height: "100%", objectFit: "contain", padding: "16px", boxSizing: "border-box" }} />
+                : <span style={{ fontSize: isMobile ? "64px" : "96px" }}>{product.emoji}</span>}
               <div className="face-panel-overlay-tag">{product.name}</div>
             </div>
           )}
@@ -182,7 +185,7 @@ function DesktopBestsellers({ addToCart, toggleFavourite, isFav, openProduct, be
       {/* LEFT: carousel cards */}
       <div className="dt-carousel-col">
         <div className="dt-carousel-nav">
-          <button className="dt-carousel-arrow" onClick={goPrev} aria-label="Previous products">‹</button>
+          {totalPages > 1 && <button className="dt-carousel-arrow" onClick={goPrev} aria-label="Previous products">‹</button>}
           <div className="dt-carousel-track">
             <div className="dt-cards-grid">
               {pageProducts.map((p, idx) => {
@@ -200,15 +203,16 @@ function DesktopBestsellers({ addToCart, toggleFavourite, isFav, openProduct, be
                     </button>
                     <div
                       className={`dt-card ${isActive ? "dt-card-active" : ""}`}
+                      style={{ "--accent": p.accent }} data-soldout={p.stock <= 0 ? "true" : undefined}
                       onClick={() => { pauseAuto(); openProduct({ ...p, _prevPage: "home" }); }}
                     >
                       <div className="dt-card-img" style={{ background: p.bg }}>
                         {p.images?.[0]
-                          ? <img src={p.images[0]} alt={p.name} style={{ width:"100%", height:"100%", objectFit:"cover", position:"absolute", inset:0 }} />
+                          ? <img src={p.images[0]} alt={p.name} loading="lazy" decoding="async" style={{ width:"100%", height:"100%", objectFit:"contain", position:"absolute", inset:0 }} />
                           : <span style={{ fontSize: "52px" }}>{p.emoji}</span>}
                         {p.badge && <div className={`product-badge ${p.badge === "new" ? "new" : ""}`}>{p.badge}</div>}
                         <button
-                          className="product-wish-btn"
+                          className="product-wish-btn" aria-label={`Save ${p.name}`}
                           onClick={e => { e.stopPropagation(); pauseAuto(); toggleFavourite(p); }}
                         >
                           {isFav(p.id) ? "❤️" : "🤍"}
@@ -216,15 +220,17 @@ function DesktopBestsellers({ addToCart, toggleFavourite, isFav, openProduct, be
                       </div>
                       <div className="dt-card-info">
                         <div className="dt-card-brand">{p.brand}</div>
-                        <div className="dt-card-name">{p.name}</div>
-                        <div className="dt-card-rating">
-                          <span className="stars">{"★".repeat(Math.floor(p.rating))}</span>
-                          <span className="rating-count">({p.reviews})</span>
-                        </div>
+                        <div className="dt-card-name"><Link href={`/product/${p.id}?from=home`} className="plink" onClick={e => e.stopPropagation()}>{p.name}</Link></div>
+                        {p.reviews > 0 && (
+                          <div className="dt-card-rating">
+                            <span className="stars">{"★".repeat(Math.floor(p.rating))}</span>
+                            <span className="rating-count">({p.reviews.toLocaleString()})</span>
+                          </div>
+                        )}
                         <div className="dt-card-footer">
                           <span className="dt-card-price">{p.price}</span>
                           <button
-                            className="add-btn"
+                            className="add-btn" aria-label={`Add ${p.name} to cart`}
                             onClick={e => { e.stopPropagation(); pauseAuto(); addToCart(p); }}
                           >+</button>
                         </div>
@@ -235,15 +241,17 @@ function DesktopBestsellers({ addToCart, toggleFavourite, isFav, openProduct, be
               })}
             </div>
           </div>
-          <button className="dt-carousel-arrow" onClick={goNext} aria-label="Next products">›</button>
+          {totalPages > 1 && <button className="dt-carousel-arrow" onClick={goNext} aria-label="Next products">›</button>}
         </div>
 
         {/* Page dots */}
-        <div className="mb-dots dt-dots">
-          {Array.from({ length: totalPages }).map((_, i) => (
-            <button key={i} className={`mb-dot ${i === pageIndex ? "active" : ""}`} onClick={() => goToPage(i)} />
-          ))}
-        </div>
+        {totalPages > 1 && (
+          <div className="mb-dots dt-dots">
+            {Array.from({ length: totalPages }).map((_, i) => (
+              <button key={i} className={`mb-dot ${i === pageIndex ? "active" : ""}`} onClick={() => goToPage(i)} />
+            ))}
+          </div>
+        )}
       </div>
 
       {/* RIGHT: two "See it on skin" panels side by side, showing the current pair */}
@@ -367,19 +375,19 @@ function MobileBestsellers({ addToCart, toggleFavourite, isFav, openProduct, bes
                     >
                       <span className="mb-display-indicator-dot">{isActive ? "👁" : "○"}</span>
                     </button>
-                    <div className="mb-card" onClick={() => { pauseAuto(); openProduct({ ...p, _prevPage: "home" }); }}>
+                    <div className="mb-card" style={{ "--accent": p.accent }} data-soldout={p.stock <= 0 ? "true" : undefined} onClick={() => { pauseAuto(); openProduct({ ...p, _prevPage: "home" }); }}>
                       <div className="mb-card-img" style={{ background: p.bg }}>
                         {p.images?.[0]
-                          ? <img src={p.images[0]} alt={p.name} style={{ width:"100%", height:"100%", objectFit:"cover", position:"absolute", inset:0 }} />
+                          ? <img src={p.images[0]} alt={p.name} loading="lazy" decoding="async" style={{ width:"100%", height:"100%", objectFit:"contain", position:"absolute", inset:0 }} />
                           : <span style={{ fontSize: "40px" }}>{p.emoji}</span>}
-                        <button className="product-wish-btn" onClick={e => { e.stopPropagation(); pauseAuto(); toggleFavourite(p); }}>{isFav(p.id) ? "❤️" : "🤍"}</button>
+                        <button className="product-wish-btn" aria-label={`Save ${p.name}`} onClick={e => { e.stopPropagation(); pauseAuto(); toggleFavourite(p); }}>{isFav(p.id) ? "❤️" : "🤍"}</button>
                       </div>
                       <div className="mb-card-info">
                         <div className="mb-card-brand">{p.brand}</div>
-                        <div className="mb-card-name">{p.name}</div>
+                        <div className="mb-card-name"><Link href={`/product/${p.id}?from=home`} className="plink" onClick={e => e.stopPropagation()}>{p.name}</Link></div>
                         <div className="mb-card-footer">
                           <span className="mb-card-price">{p.price}</span>
-                          <button className="add-btn" onClick={e => { e.stopPropagation(); pauseAuto(); addToCart(p); }}>+</button>
+                          <button className="add-btn" aria-label={`Add ${p.name} to cart`} onClick={e => { e.stopPropagation(); pauseAuto(); addToCart(p); }}>+</button>
                         </div>
                       </div>
                     </div>
@@ -432,6 +440,10 @@ function HomePage({ setPage, goToProducts, addToCart, toggleFavourite, isFav, op
     .sort((a, b) => (b.purchases || 0) - (a.purchases || 0))
     .slice(0, Math.max(0, 12 - manuallyTagged.length));
   const bestsellerProducts = [...manuallyTagged, ...autoFilled].slice(0, 12);
+  // Real numbers straight from the database (no hardcoded claims).
+  const productCount = (products || []).length;
+  const brandCount = new Set((products || []).map(p => (p.brand || "").trim().toLowerCase()).filter(Boolean)).size;
+  const plural = (n, one, many) => `${n} ${n === 1 ? one : many}`;
   return (
     <div className="page page-enter">
             {/* SITE OPENING SALE BANNER */}
@@ -476,50 +488,55 @@ function HomePage({ setPage, goToProducts, addToCart, toggleFavourite, isFav, op
             <div style={{fontSize:"11px",color:"rgba(0,0,0,0.4)",fontWeight:500}}>This month only 🎉</div>
           </div>
         </div>
-        <div className="hero-card-anchor" style={{ left: "90.3%", top: "19.7%" }}>
-          <div className="hero-card-sm c2">
-            <div className="num">2.3K+</div>
-            <div style={{fontSize:'11px',color:'rgba(0,0,0,0.4)',fontWeight:600,letterSpacing:'1px',textTransform:'uppercase',marginTop:'2px'}}>Verified Reviews</div>
-            <div className="hero-stars">⭐ Trusted</div>
+        {productCount > 0 && (
+          <div className="hero-card-anchor" style={{ left: "90.3%", top: "19.7%" }}>
+            <div className="hero-card-sm c2">
+              <div className="num">{productCount}</div>
+              <div style={{fontSize:'11px',color:'rgba(0,0,0,0.4)',fontWeight:600,letterSpacing:'1px',textTransform:'uppercase',marginTop:'2px'}}>{productCount === 1 ? "Product" : "Products"}</div>
+              <div className="hero-stars">✓ Authentic</div>
+            </div>
           </div>
-        </div>
-        <div className="hero-card-anchor" style={{ left: "67.5%", top: "65.5%" }}>
-          <div className="hero-card-sm c1">
-            <div className="num">15K+</div>
-            <div style={{fontSize:'11px',color:'rgba(0,0,0,0.4)',fontWeight:600,letterSpacing:'1px',textTransform:'uppercase',marginTop:'2px'}}>Happy Customers</div>
-            <div className="hero-stars">★★★★★</div>
+        )}
+        {brandCount > 0 && (
+          <div className="hero-card-anchor" style={{ left: "67.5%", top: "65.5%" }}>
+            <div className="hero-card-sm c1">
+              <div className="num">{brandCount}</div>
+              <div style={{fontSize:'11px',color:'rgba(0,0,0,0.4)',fontWeight:600,letterSpacing:'1px',textTransform:'uppercase',marginTop:'2px'}}>{brandCount === 1 ? "Brand" : "Brands"}</div>
+              <div className="hero-stars">✓ Curated</div>
+            </div>
           </div>
-        </div>
+        )}
       </section>
 
       {/* MARQUEE */}
       <div className="marquee-wrap">
         <div className="marquee-track">
           {[...Array(2)].map((_,i) => (
-            ["FREE SHIPPING OVER PKR 5000","OVER 15,000 HAPPY CUSTOMERS","AUTHENTIC PRODUCTS GUARANTEED","2,300+ FIVE STAR REVIEWS","K-BEAUTY EXPERTS","SAME DAY DISPATCH"].map((t,j) => (
+            ["AUTHENTIC PRODUCTS GUARANTEED","CASH ON DELIVERY","SKINCARE ✦ MAKEUP","FRAGRANCES ✦ HAIR CARE","MADE FOR PAKISTAN"].map((t,j) => (
               <div key={`${i}-${j}`} className="marquee-item">{t}</div>
             ))
           ))}
         </div>
       </div>
 
-      {/* STATS */}
-      <div className="stats-band">
-        {[
-          { num:"15,000+", label:"Happy Customers" },
-          { num:"2,300+",  label:"5-Star Reviews"  },
-          { num:"200+",    label:"Premium Brands"   },
-          { num:"24/7",    label:"Customer Support" },
-        ].map((s, i) => (
-          <Fragment key={s.label}>
-            <div className="stat-item">
-              <div className="stat-num">{s.num}</div>
-              <div className="stat-label">{s.label}</div>
-            </div>
-            {i < 3 && <div className="stat-divider" />}
-          </Fragment>
-        ))}
-      </div>
+      {/* STATS (live from the database) */}
+      {productCount > 0 && (
+        <div className="stats-band">
+          {[
+            { num: String(productCount), label: productCount === 1 ? "Product" : "Products" },
+            { num: String(brandCount),   label: brandCount === 1 ? "Brand" : "Brands" },
+            { num: "COD",                label: "Pay on arrival" },
+          ].map((st, i, arr) => (
+            <Fragment key={st.label}>
+              <div className="stat-item">
+                <div className="stat-num">{st.num}</div>
+                <div className="stat-label">{st.label}</div>
+              </div>
+              {i < arr.length - 1 && <div className="stat-divider" />}
+            </Fragment>
+          ))}
+        </div>
+      )}
 
       {/* BESTSELLERS — desktop carousel + mobile carousel, CSS controls which shows.
           Doesn't render at all if there's nothing real to show yet — see
@@ -581,31 +598,6 @@ function HomePage({ setPage, goToProducts, addToCart, toggleFavourite, isFav, op
         <div className="parallax-text-overlay">"Beauty is the art of living well."</div>
       </div>
 
-      {/* REVIEWS */}
-      <section className="reviews-section">
-        <div className="reviews-header">
-          <div className="reviews-eyebrow">✦ Real People, Real Results</div>
-          <h2 className="reviews-title">Over 2,300 customers <br/>absolutely <em>love</em> us</h2>
-        </div>
-        <div className="reviews-track-outer">
-          <div className="reviews-track">
-            {[...reviews, ...reviews].map((r, i) => (
-              <div key={i} className="review-card">
-                <div className="review-stars">{"★".repeat(r.rating)}</div>
-                <p className="review-text">"{r.text}"</p>
-                <div className="review-author">
-                  <div className="review-avatar" style={{background:'rgba(255,255,255,0.1)'}}>{r.avatar}</div>
-                  <div>
-                    <div className="review-name">{r.name}</div>
-                    <div className="review-product">{r.product}</div>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
       {/* RITUAL SECTION */}
       <section className="ritual-section">
         <div className="ritual-grid">
@@ -637,11 +629,8 @@ function HomePage({ setPage, goToProducts, addToCart, toggleFavourite, isFav, op
       {/* NEWSLETTER */}
       <section className="newsletter">
         <div className="newsletter-title">Join the glow family 💛</div>
-        <p className="newsletter-sub">Get 15% off your first order + early access to launches & sales</p>
-        <div className="newsletter-form">
-          <input className="newsletter-input" placeholder="your@email.com" />
-          <button className="newsletter-btn">Subscribe</button>
-        </div>
+        <p className="newsletter-sub">Get early access to launches & sales</p>
+        <NewsletterForm />
       </section>
     </div>
   );

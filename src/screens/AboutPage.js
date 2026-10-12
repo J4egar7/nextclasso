@@ -1,5 +1,3 @@
-import { teamMembers } from "../data/brands.js";
-
 function AboutPage({ setPage, goToProducts }) {
   return (
     <div className="page page-enter">
@@ -23,23 +21,6 @@ function AboutPage({ setPage, goToProducts }) {
         </div>
       </section>
 
-      {/* STATS */}
-      <div className="about-stats">
-        <div className="about-stats-grid">
-          {[
-            { num:"15K+", label:"Happy Customers" },
-            { num:"2,300+", label:"Positive Reviews" },
-            { num:"200+", label:"Premium Brands" },
-            { num:"4+", label:"Years of Love" },
-          ].map(s => (
-            <div key={s.label}>
-              <div className="a-stat-num">{s.num}</div>
-              <div className="a-stat-label">{s.label}</div>
-            </div>
-          ))}
-        </div>
-      </div>
-
       {/* VALUES */}
       <section className="about-values">
         <h2 className="about-val-title">What we <span>stand for</span></h2>
@@ -48,7 +29,7 @@ function AboutPage({ setPage, goToProducts }) {
             { icon:"🌿", cls:"sage", name:"100% Authentic", desc:"Every single product is sourced directly from brands or authorised distributors. Zero grey-market products — ever." },
             { icon:"🌍", cls:"orange", name:"Globally Curated", desc:"We travel the world (and the internet) to bring you the best of K-Beauty, US, UK and European brands." },
             { icon:"♻️", cls:"sage", name:"Sustainable Beauty", desc:"We prioritise brands committed to eco-conscious packaging and cruelty-free formulations." },
-            { icon:"💛", cls:"orange", name:"Community First", desc:"We're more than a store. We're a beauty community of over 15,000 people who support each other's glow journeys." },
+            { icon:"💛", cls:"orange", name:"Community First", desc:"We're more than a store. We want CLASO to be a place where people share what works for them and support each other's glow journeys." },
           ].map(v => (
             <div key={v.name} className="value-card">
               <div className={`value-icon ${v.cls}`}>{v.icon}</div>

@@ -1,7 +1,8 @@
 import { useState } from "react";
-import { skincareReviews } from "../data/reviews.js";
 import { skincareConcerns } from "../data/filters.js";
 import { SKINCARE_CATEGORIES } from "../data/constants.js";
+import Link from "next/link";
+import NewsletterForm from "../components/NewsletterForm.js";
 
 function SkincarePage({ addToCart, goToProducts, toggleFavourite, isFav, openProduct, products }) {
   // All skincare products now come straight from Supabase — a product
@@ -90,17 +91,17 @@ function SkincarePage({ addToCart, goToProducts, toggleFavourite, isFav, openPro
   );
 
   const ProductCard = ({ p }) => (
-    <div className="skin-product-card" onClick={() => openProduct({ ...p, _prevPage: "skincare" })}>
+    <div className="skin-product-card" style={{ "--accent": p.accent }} data-soldout={p.stock <= 0 ? "true" : undefined} onClick={() => openProduct({ ...p, _prevPage: "skincare" })}>
       <div className="skin-img" style={{ background: p.bg }}>
         {p.images?.[0]
-          ? <img src={p.images[0]} alt={p.name} style={{ width:"100%", height:"100%", objectFit:"cover", position:"absolute", inset:0 }} />
+          ? <img src={p.images[0]} alt={p.name} loading="lazy" decoding="async" style={{ width:"100%", height:"100%", objectFit:"contain", position:"absolute", inset:0 }} />
           : <span style={{fontSize:'52px'}}>{p.emoji}</span>}
         {p.badge && <div className="skin-badge">{p.badge}</div>}
-        <button className="product-wish-btn" onClick={e => { e.stopPropagation(); toggleFavourite({ ...p, _pageTag: "skincare" }); }}>{isFav(p.id) ? "❤️" : "🤍"}</button>
+        <button className="product-wish-btn" aria-label={`Save ${p.name}`} onClick={e => { e.stopPropagation(); toggleFavourite({ ...p, _pageTag: "skincare" }); }}>{isFav(p.id) ? "❤️" : "🤍"}</button>
       </div>
       <div className="skin-info">
         <div className="skin-brand">{p.brand}</div>
-        <div className="skin-name">{p.name}</div>
+        <div className="skin-name"><Link href={`/product/${p.id}?from=skincare`} className="plink" onClick={e => e.stopPropagation()}>{p.name}</Link></div>
         <div className="skin-desc">{p.desc}</div>
         <div style={{display:"flex",alignItems:"center",gap:"5px",marginBottom:"10px"}}>
           <span style={{color:"var(--skin-secondary)",fontSize:"12px"}}>{"★".repeat(Math.floor(p.rating))}</span>
@@ -108,7 +109,7 @@ function SkincarePage({ addToCart, goToProducts, toggleFavourite, isFav, openPro
         </div>
         <div className="skin-footer">
           <div className="skin-price">{p.price}</div>
-          <button className="add-btn-skin" onClick={e => { e.stopPropagation(); addToCart(p); }}>+</button>
+          <button className="add-btn-skin" aria-label={`Add ${p.name} to cart`} onClick={e => { e.stopPropagation(); addToCart(p); }}>+</button>
         </div>
       </div>
     </div>
@@ -260,28 +261,6 @@ function SkincarePage({ addToCart, goToProducts, toggleFavourite, isFav, openPro
         </button>
       )}
 
-      {/* SKINCARE QUOTES */}
-      <section className="reviews-section">
-        <div className="reviews-header">
-          <div className="reviews-eyebrow" style={{ color: "var(--skin-secondary)" }}>✦ Real Skin, Real Stories</div>
-          <h2 className="reviews-title">Our customers <br/><em>glow different</em></h2>
-        </div>
-        <div className="reviews-track-outer">
-          <div className="reviews-track">
-            {[...skincareReviews, ...skincareReviews].map((r, i) => (
-              <div key={i} className="review-card">
-                <div className="review-stars" style={{ color: "var(--skin-secondary)" }}>{"★".repeat(r.rating)}</div>
-                <p className="review-text">"{r.text}"</p>
-                <div className="review-author">
-                  <div className="review-avatar" style={{ background: "rgba(201,116,143,0.2)" }}>{r.avatar}</div>
-                  <div><div className="review-name">{r.name}</div><div className="review-product">{r.product}</div></div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
       {/* SKINCARE MANIFESTO */}
       <div style={{ background: "var(--skin-accent)", padding: "clamp(48px, 10vw, 100px) 8vw", textAlign: "center" }}>
         <div style={{ fontFamily: "Bebas Neue", fontSize: "13px", letterSpacing: "5px", color: "var(--skin-primary)", marginBottom: "24px" }}>OUR SKINCARE PHILOSOPHY</div>
@@ -294,11 +273,8 @@ function SkincarePage({ addToCart, goToProducts, toggleFavourite, isFav, openPro
       {/* NEWSLETTER */}
       <section className="newsletter" style={{ background: "var(--skin-secondary)", borderRadius: 0 }}>
         <div className="newsletter-title" style={{ fontFamily: "Playfair Display", color: "white" }}>Get skincare tips & exclusive deals 🌸</div>
-        <p className="newsletter-sub" style={{ color: "rgba(255,255,255,0.75)" }}>Join 15,000+ beauty enthusiasts in our community</p>
-        <div className="newsletter-form">
-          <input className="newsletter-input" placeholder="your@email.com" />
-          <button className="newsletter-btn" style={{ background: "var(--skin-primary)" }}>Join Now</button>
-        </div>
+        <p className="newsletter-sub" style={{ color: "rgba(255,255,255,0.75)" }}>Skincare tips, new arrivals and offers, straight to your inbox</p>
+        <NewsletterForm buttonLabel="Join Now" buttonStyle={{ background: "var(--skin-primary)" }} />
       </section>
     </div>
   );

@@ -1,10 +1,35 @@
 import { useState } from "react";
-import { allBrands } from "../data/brands.js";
+import { SKINCARE_CATEGORIES, MAKEUP_CATEGORIES } from "../data/constants.js";
 
-function BrandsPage({ setPage, goToProducts }) {
+const tagOf = (category) =>
+  SKINCARE_CATEGORIES.includes(category) ? "Skincare"
+  : MAKEUP_CATEGORIES.includes(category) ? "Makeup"
+  : category; // "Fragrance" / "Hair & Body"
+
+// Builds the brand list from the live product catalog, so it can never drift
+// from what the store actually sells.
+function brandsFromProducts(products) {
+  const map = new Map();
+  (products || []).forEach(p => {
+    const name = (p.brand || "").trim();
+    if (!name) return;
+    const key = name.toLowerCase();
+    if (!map.has(key)) map.set(key, { name, emoji: "", count: 0, tags: new Set() });
+    const b = map.get(key);
+    b.count += 1;
+    if (!b.emoji && p.emoji) b.emoji = p.emoji;
+    b.tags.add(tagOf(p.category));
+  });
+  return [...map.values()]
+    .map(b => ({ ...b, tags: [...b.tags] }))
+    .sort((a, b) => a.name.localeCompare(b.name));
+}
+
+function BrandsPage({ setPage, goToProducts, products }) {
   const [filter, setFilter] = useState("All");
   const categories = ["All", "Skincare", "Makeup", "Fragrance", "Hair & Body"];
-  const filtered = filter === "All" ? allBrands : allBrands.filter(b => b.tag === filter);
+  const allBrands = brandsFromProducts(products);
+  const filtered = filter === "All" ? allBrands : allBrands.filter(b => b.tags.includes(filter));
 
   return (
     <div className="page page-enter">
@@ -38,20 +63,25 @@ function BrandsPage({ setPage, goToProducts }) {
             <button key={c} className={`brand-filter-btn ${filter === c ? "active" : ""}`} onClick={() => setFilter(c)}>{c}</button>
           ))}
         </div>
-        <div className="brands-grid">
-          {filtered.map(b => (
-            <div key={b.name} className="brand-card">
-              <div className="brand-card-emoji">{b.emoji}</div>
-              <div className="brand-card-origin">{b.origin}</div>
-              <div className="brand-card-name">{b.name}</div>
-              <div className="brand-card-desc">{b.desc}</div>
-              <div className="brand-card-footer">
-                <div className="brand-auth-pill">✓ 100% Authentic</div>
-                <div className="brand-category-pill">{b.category}</div>
+        {filtered.length === 0 ? (
+          <p style={{ textAlign: "center", color: "rgba(26,10,10,0.5)", padding: "40px 0" }}>
+            {allBrands.length === 0 ? "Brands will appear here as products are added to the store." : "No brands in this category yet."}
+          </p>
+        ) : (
+          <div className="brands-grid">
+            {filtered.map(b => (
+              <div key={b.name} className="brand-card">
+                <div className="brand-card-emoji">{b.emoji || "🏷️"}</div>
+                <div className="brand-card-origin">{b.count} {b.count === 1 ? "product" : "products"}</div>
+                <div className="brand-card-name">{b.name.toUpperCase()}</div>
+                <div className="brand-card-footer">
+                  <div className="brand-auth-pill">✓ 100% Authentic</div>
+                  <div className="brand-category-pill">{b.tags.join(" · ")}</div>
+                </div>
               </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
       </section>
 
       {/* PROMISE SECTION */}

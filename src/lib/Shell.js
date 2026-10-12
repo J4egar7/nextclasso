@@ -1,7 +1,9 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
+import { CONTACT } from "../data/contact.js";
 import { useStore } from "./StoreContext.js";
 import { pageToPath, pathToPage } from "./routes.js";
 
@@ -31,6 +33,15 @@ export default function Shell({ children }) {
   }, []);
 
   useEffect(() => {
+    const onKey = (e) => {
+      if (e.key !== "Escape") return;
+      setMobileMenuOpen(false); setCartOpen(false); setFavOpen(false);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [setCartOpen, setFavOpen]);
+
+  useEffect(() => {
     // Instant, not smooth — a smooth animated scroll during a full page
     // navigation is what caused the "zoomed in / white background"
     // glitch on mobile (briefly showing the old scroll position while
@@ -56,13 +67,16 @@ export default function Shell({ children }) {
 
   return (
     <>
+      {/* Lets keyboard users jump past the navigation */}
+      {!isAdminRoute && <a href="#main" className="skip-link">Skip to main content</a>}
+
       {/* TOAST */}
-      <div className={`toast ${toastVisible ? "show" : ""}`}>🛍️ {toast}</div>
+      <div className={`toast ${toastVisible ? "show" : ""}`} role="status" aria-live="polite">🛍️ {toast}</div>
 
       {/* NAV — hidden on admin routes */}
       {!isAdminRoute && (
         <nav className={`nav nav-onpage-${page} ${scrolled ? "scrolled" : ""}`} style={{ background: navColor() }}>
-          <div className="nav-logo" onClick={() => navigate("home")}>CLASO</div>
+          <Link href="/" className="nav-logo" aria-label="CLASO home">CLASO</Link>
 
           <ul className="nav-links">
             {[
@@ -73,22 +87,22 @@ export default function Shell({ children }) {
             ].map(p => (
               <li key={p.id}
                 className={`nav-${p.id} ${page === p.id ? "active" : ""}`}
-                onClick={() => navigate(p.id)}
                 style={{ color: scrolled ? "#1a0a0a" : page === "makeup" ? "white" : "#1a0a0a" }}>
-                {p.label}
+                <Link href={pageToPath(p.id)} className="nav-link-a" aria-current={page === p.id ? "page" : undefined}>{p.label}</Link>
               </li>
             ))}
           </ul>
 
           <div className="nav-desktop-right" style={{ display: "flex", alignItems: "center", gap: "14px" }}>
-            <div className="nav-heart" onClick={() => setFavOpen(true)}>
+            <Link href="/search" className="nav-search" aria-label="Search products">🔍</Link>
+            <button type="button" className="nav-heart nav-btn-reset" onClick={() => setFavOpen(true)} aria-label={`Saved items (${favourites.length})`}>
               {favourites.length > 0 ? "❤️" : "🤍"}
               {favourites.length > 0 && <span className="fav-badge">{favourites.length}</span>}
-            </div>
-            <div className="nav-cart" onClick={() => setCartOpen(true)} style={{ cursor: "pointer" }}>
+            </button>
+            <button type="button" className="nav-cart nav-btn-reset" onClick={() => setCartOpen(true)} aria-label={`Cart (${cartCount} items)`}>
               🛍️
               {cartCount > 0 && <span className="cart-badge">{cartCount}</span>}
-            </div>
+            </button>
             {user?.isAdmin && (
               <div
                 className={`nav-user-badge ${scrolled || page !== "makeup" ? "dark" : ""}`}
@@ -118,13 +132,14 @@ export default function Shell({ children }) {
           <div className="mobile-menu">
             <div className="mobile-menu-head">
               <span className="mobile-menu-logo">CLASO</span>
-              <button className="mobile-menu-close" onClick={() => setMobileMenuOpen(false)}>✕</button>
+              <button className="mobile-menu-close" onClick={() => setMobileMenuOpen(false)} aria-label="Close menu">✕</button>
             </div>
             <div className="mobile-menu-links">
               {[
                 { id: "home",     label: "Home",     icon: "🏠", cls: ""          },
                 { id: "skincare", label: "Skincare",  icon: "🌿", cls: "skin-link" },
                 { id: "makeup",   label: "Makeup",    icon: "💄", cls: "make-link" },
+                { id: "search",   label: "Search",    icon: "🔍", cls: ""          },
                 { id: "about",    label: "About",     icon: "✦",  cls: "about-link"},
               ].map(l => (
                 <button key={l.id}
@@ -165,6 +180,10 @@ export default function Shell({ children }) {
       {/* MOBILE BOTTOM TAB BAR */}
       {!isAdminRoute && (
         <div className="mobile-bottom-bar">
+          <button className="mobile-tab" onClick={() => navigate("search")} aria-label="Search">
+            <span className="mobile-tab-icon">🔍</span>
+            <span className="mobile-tab-label">Search</span>
+          </button>
           <button className="mobile-tab" onClick={() => setFavOpen(true)}>
             <span className="mobile-tab-icon">{favourites.length > 0 ? "❤️" : "🤍"}</span>
             <span className="mobile-tab-label">Saved</span>
@@ -189,7 +208,17 @@ export default function Shell({ children }) {
       )}
 
       {/* PAGE CONTENT */}
-      {children}
+      {isAdminRoute ? children : <main id="main" tabIndex={-1}>{children}</main>}
+
+      {!isAdminRoute && CONTACT.whatsapp && (
+        <a
+          className="wa-float"
+          href={`https://wa.me/${CONTACT.whatsapp}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label="Chat with us on WhatsApp"
+        >💬</a>
+      )}
 
       {/* DRAWERS */}
       {cartOpen && <CartDrawer cart={cart} removeFromCart={removeFromCart} updateCartQty={updateCartQty} cartTotal={cartTotal} onClose={() => setCartOpen(false)} onCheckout={() => { setCartOpen(false); navigate("checkout"); }} />}

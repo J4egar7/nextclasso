@@ -2,6 +2,12 @@ import "../src/styles/globals.css";
 import { Playfair_Display, DM_Sans, Bebas_Neue, Cormorant_Garamond } from "next/font/google";
 import { StoreProvider } from "../src/lib/StoreContext.js";
 import Shell from "../src/lib/Shell.js";
+import { getPublicProducts } from "../src/lib/serverProducts.js";
+
+// Pages are rebuilt on the server at most once a minute, so the HTML always
+// contains a fresh copy of the real catalog. Live changes after that arrive
+// through the Supabase realtime subscription in StoreContext.
+export const revalidate = 60;
 
 // Self-hosted via next/font at build time — no runtime request to
 // fonts.googleapis.com, so fonts always load reliably (previously
@@ -56,6 +62,10 @@ export const metadata = {
     images: ["/og-image.jpg"],
   },
   robots: { index: true, follow: true },
+  applicationName: "CLASO",
+  manifest: "/manifest.json",
+  icons: { icon: "/favicon.ico", apple: "/logo192.png" },
+  formatDetection: { telephone: false },
 };
 
 // Without this, mobile browsers assume a ~980px desktop-width page and
@@ -64,9 +74,11 @@ export const metadata = {
 export const viewport = {
   width: "device-width",
   initialScale: 1,
+  themeColor: "#FF5E5B",
 };
 
-export default function RootLayout({ children }) {
+export default async function RootLayout({ children }) {
+  const initialProducts = await getPublicProducts();
   const orgSchema = {
     "@context": "https://schema.org",
     "@type": "OnlineStore",
@@ -77,6 +89,19 @@ export default function RootLayout({ children }) {
     paymentAccepted: "Cash on Delivery",
   };
 
+  // Lets Google show a search box for the site and understand the site name.
+  const siteSchema = {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    name: "CLASO",
+    url: "https://nextclasso.vercel.app",
+    potentialAction: {
+      "@type": "SearchAction",
+      target: "https://nextclasso.vercel.app/search?q={search_term_string}",
+      "query-input": "required name=search_term_string",
+    },
+  };
+
   return (
     <html lang="en" className={`${playfair.variable} ${dmSans.variable} ${bebas.variable} ${cormorant.variable}`}>
       <body>
@@ -84,7 +109,11 @@ export default function RootLayout({ children }) {
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(orgSchema).replace(/</g, "\\u003c") }}
         />
-        <StoreProvider>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(siteSchema).replace(/</g, "\\u003c") }}
+        />
+        <StoreProvider initialProducts={initialProducts}>
           <Shell>{children}</Shell>
         </StoreProvider>
       </body>

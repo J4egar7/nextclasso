@@ -1,9 +1,9 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, Fragment } from "react";
 import { WEIGHT_UNITS, CATEGORIES, BADGES, BG_PRESETS } from "../data/constants.js";
 import { supabase } from "../lib/supabase.js";
 
 const blankForm = {
-  name:"", brand:"", category:"Cleansers", price:"", oldPrice:"", stock:"",
+  name:"", brand:"", category:"Cleansers", price:"", oldPrice:"", manufacturingCost:"", stock:"",
   description:"", weight:"", weightUnit:"g", images:[],
   emoji:"", bg:"", badge:"",
 };
@@ -18,7 +18,40 @@ function mapRowToProduct(row) {
     images: row.images || [],
     emoji: row.emoji, bg: row.bg, badge: row.badge,
     rating: row.rating, reviews: row.reviews, purchases: row.purchases, views: row.views,
+    // Admin-only. The old mapper dropped this column, so every product looked
+    // like it cost PKR 0 to make and "profit" was just the sale price.
+    manufacturing_cost: row.manufacturing_cost == null ? null : Number(row.manufacturing_cost),
   };
+}
+
+// Phone photos are often 4 to 8 MB. Shrinking them before upload (max 1400px,
+// WebP) makes every product page load far faster and keeps storage small.
+async function compressImage(file, maxSide = 1400, quality = 0.85) {
+  const readOriginal = () => new Promise((resolve, reject) => {
+    const r = new FileReader();
+    r.onload = ev => resolve(ev.target.result);
+    r.onerror = reject;
+    r.readAsDataURL(file);
+  });
+  try {
+    const bitmap = await createImageBitmap(file);
+    const scale = Math.min(1, maxSide / Math.max(bitmap.width, bitmap.height));
+    const w = Math.max(1, Math.round(bitmap.width * scale));
+    const h = Math.max(1, Math.round(bitmap.height * scale));
+    const canvas = document.createElement("canvas");
+    canvas.width = w; canvas.height = h;
+    canvas.getContext("2d").drawImage(bitmap, 0, 0, w, h);
+    const blob = await new Promise(res => canvas.toBlob(res, "image/webp", quality));
+    if (!blob || (scale === 1 && blob.size >= file.size)) return readOriginal();
+    return await new Promise((resolve, reject) => {
+      const r = new FileReader();
+      r.onload = ev => resolve(ev.target.result);
+      r.onerror = reject;
+      r.readAsDataURL(blob);
+    });
+  } catch {
+    return readOriginal();
+  }
 }
 
 function AdminPage({ setPage, user, setUser, authChecked }) {
@@ -32,6 +65,13 @@ function AdminPage({ setPage, user, setUser, authChecked }) {
   const [loadingProducts, setLoadingProducts] = useState(true);
   const [orders, setOrders] = useState([]);
   const [loadingOrders, setLoadingOrders] = useState(true);
+  const [reviews, setReviews] = useState([]);
+  const [reviewFilter, setReviewFilter] = useState("pending");
+  const [subscribers, setSubscribers] = useState([]);
+  const [orderSearch, setOrderSearch] = useState("");
+  const [orderStatus, setOrderStatus] = useState("all");
+  const [expandedOrder, setExpandedOrder] = useState(null);
+  const [updatingOrder, setUpdatingOrder] = useState(null);
 
   // Live-sync the product catalogue from Supabase — this is the single
   // source of truth the storefront also reads from. Admin queries can
@@ -75,6 +115,28 @@ function AdminPage({ setPage, user, setUser, authChecked }) {
     return () => supabase.removeChannel(channel);
   }, []);
 
+  // Customer reviews waiting for approval (and the ones already decided).
+  useEffect(() => {
+    const load = () => {
+      supabase.from("reviews").select("*").order("created_at", { ascending: false }).then(({ data, error }) => {
+        if (!error) setReviews(data || []);
+      });
+    };
+    load();
+    const channel = supabase
+      .channel("admin-reviews-changes")
+      .on("postgres_changes", { event: "*", schema: "public", table: "reviews" }, load)
+      .subscribe();
+    return () => supabase.removeChannel(channel);
+  }, []);
+
+  // Newsletter sign-ups.
+  useEffect(() => {
+    supabase.from("subscribers").select("*").order("created_at", { ascending: false }).then(({ data, error }) => {
+      if (!error) setSubscribers(data || []);
+    });
+  }, []);
+
   // Redirect to login only once we've actually finished checking for an
   // existing session — otherwise a real logged-in admin gets bounced to
   // login on every refresh, since `user` starts null either way while
@@ -90,13 +152,17 @@ function AdminPage({ setPage, user, setUser, authChecked }) {
 
   const setField = (k,v) => setForm(f => ({...f, [k]:v}));
 
-  const handleImages = (e) => {
-    const files = Array.from(e.target.files);
-    files.forEach(file => {
-      const reader = new FileReader();
-      reader.onload = ev => setForm(f => ({ ...f, images: [...f.images, ev.target.result] }));
-      reader.readAsDataURL(file);
-    });
+  const handleImages = async (e) => {
+    const files = Array.from(e.target.files || []).filter(f => f.type.startsWith("image/"));
+    e.target.value = "";
+    const room = Math.max(0, 10 - form.images.length);
+    if (files.length > room) setError("You can add up to 10 images per product.");
+    const results = [];
+    for (const file of files.slice(0, room)) {
+      if (file.size > 25 * 1024 * 1024) { setError(`${file.name} is larger than 25 MB.`); continue; }
+      results.push(await compressImage(file));
+    }
+    if (results.length) setForm(f => ({ ...f, images: [...f.images, ...results].slice(0, 10) }));
   };
 
   const removeImage = (idx) => {
@@ -129,13 +195,20 @@ function AdminPage({ setPage, user, setUser, authChecked }) {
         }
       }
 
+      // Store prices in one consistent format ("PKR 3,200") however they
+      // were typed, so every card on the storefront looks the same.
+      const priceNum = parseInt(form.price.replace(/[^0-9]/g, "")) || 0;
+      const oldNum = parseInt(form.oldPrice.replace(/[^0-9]/g, "")) || 0;
       const payload = {
         name: form.name.trim(),
         brand: form.brand.trim(),
         category: form.category,
-        price: form.price.trim(),
-        price_num: parseInt(form.price.replace(/[^0-9]/g, "")) || 0,
-        old_price: form.oldPrice.trim() || null,
+        price: priceNum > 0 ? `PKR ${priceNum.toLocaleString("en-US")}` : form.price.trim(),
+        price_num: priceNum,
+        old_price: oldNum > 0 ? `PKR ${oldNum.toLocaleString("en-US")}` : null,
+        ...(String(form.manufacturingCost).trim() !== ""
+          ? { manufacturing_cost: parseInt(String(form.manufacturingCost).replace(/[^0-9]/g, "")) || 0 }
+          : {}),
         stock: parseInt(form.stock) || 0,
         description: form.description.trim(),
         weight: form.weight,
@@ -169,7 +242,7 @@ function AdminPage({ setPage, user, setUser, authChecked }) {
 
   const handleEdit = (p) => {
     setForm({
-      name:p.name, brand:p.brand, category:p.category, price:p.price, oldPrice:p.old||"",
+      name:p.name, brand:p.brand, category:p.category, price:p.price, oldPrice:p.old||"", manufacturingCost: p.manufacturing_cost ? String(p.manufacturing_cost) : "",
       stock:String(p.stock), description:p.description, weight:p.weight||"", weightUnit:p.weightUnit||"g",
       images:p.images || [], emoji:p.emoji||"", bg:p.bg||"", badge:p.badge||"",
     });
@@ -203,24 +276,111 @@ function AdminPage({ setPage, user, setUser, authChecked }) {
   const parsePrice = (str) => parseInt(String(str || "").replace(/[^0-9]/g, "")) || 0;
   const fmtPKR = (n) => `PKR ${Math.round(n).toLocaleString()}`;
 
-  // Revenue: straightforward sum of what orders actually charged.
-  // Profit: revenue minus manufacturing_cost per item — looked up from
-  // the live product list (admin's own fetch includes manufacturing_cost,
-  // unlike the public storefront query). An item whose product has since
-  // been deleted, or was never in this table (a leftover from before the
-  // hardcoded catalog was retired, if any), has no known cost — it's
-  // counted in revenue but excluded from the cost side, since assuming a
-  // cost we don't actually know would just be a fabricated number.
-  const costById = Object.fromEntries(products.map(p => [String(p.id), p.manufacturing_cost || 0]));
-  const totalRevenue = orders.reduce((sum, o) => sum + (o.total || 0), 0);
-  const totalProfit = orders.reduce((sum, o) => {
-    const orderProfit = (o.items || []).reduce((s, item) => {
-      const cost = costById[String(item.product_id)];
-      if (cost === undefined) return s; // unknown cost — don't fabricate a number
-      return s + (parsePrice(item.price) - cost) * (item.qty || 1);
-    }, 0);
-    return sum + orderProfit;
-  }, 0);
+  // Sales    = sale price x quantity for every item in non-cancelled orders
+  //            (delivery fees are not product sales).
+  // Profit   = (sale price - manufacturing cost) x quantity.
+  // The cost comes from the product's manufacturing_cost, which only the
+  // admin can read. An item with no cost set (or whose product was deleted)
+  // is left OUT of profit instead of being counted as 100% profit, and the
+  // dashboard says how many items were left out.
+  const costById = Object.fromEntries(products.map(p => [String(p.id), p.manufacturing_cost]));
+  const itemKey = (item) => String(item.product_id ?? item.id);
+  const itemCost = (item) => {
+    const c = costById[itemKey(item)];
+    return Number.isFinite(c) && c > 0 ? c : null;
+  };
+  const orderSales = (o) => (o.items || []).reduce((sum, item) => sum + parsePrice(item.price) * (item.qty || 1), 0);
+  const orderProfitInfo = (o) => (o.items || []).reduce((acc, item) => {
+    const qty = item.qty || 1;
+    const cost = itemCost(item);
+    if (cost === null) { acc.missing += qty; return acc; }
+    acc.profit += (parsePrice(item.price) - cost) * qty;
+    return acc;
+  }, { profit: 0, missing: 0 });
+  // Cancelled orders never count towards sales or profit.
+  const countedOrders = orders.filter(o => o.status !== "cancelled");
+  const totalRevenue = countedOrders.reduce((sum, o) => sum + orderSales(o), 0);
+  const profitTotals = countedOrders.reduce((acc, o) => {
+    const info = orderProfitInfo(o);
+    return { profit: acc.profit + info.profit, missing: acc.missing + info.missing };
+  }, { profit: 0, missing: 0 });
+  const totalProfit = profitTotals.profit;
+  const productsMissingCost = products.filter(p => !(Number.isFinite(p.manufacturing_cost) && p.manufacturing_cost > 0)).length;
+
+  const STATUS_LABELS = { pending: "Pending", delivered: "Fulfilled", cancelled: "Cancelled" };
+  const statusOf = (o) => o.status || "pending";
+  const pendingCount = orders.filter(o => statusOf(o) === "pending").length;
+  const orderNumber = (o) => "#" + String(o.id).replace(/-/g, "").slice(-6).toUpperCase();
+
+  const q = orderSearch.trim().toLowerCase();
+  const visibleOrders = orders.filter(o => {
+    if (orderStatus !== "all" && statusOf(o) !== orderStatus) return false;
+    if (!q) return true;
+    const hay = [o.customer_name, o.customer_phone, o.customer_email, o.customer_address, String(o.id), orderNumber(o),
+      ...(o.items || []).map(i => i.name)].join(" ").toLowerCase();
+    return hay.includes(q);
+  });
+
+  const updateOrderStatus = async (o, status) => {
+    setError("");
+    setUpdatingOrder(o.id);
+    const previous = o.status;
+    setOrders(list => list.map(x => x.id === o.id ? { ...x, status } : x)); // optimistic
+    const { error: updateError } = await supabase.from("orders").update({ status }).eq("id", o.id);
+    if (updateError) {
+      console.error(updateError);
+      setOrders(list => list.map(x => x.id === o.id ? { ...x, status: previous } : x));
+      setError("Could not update the order status: " + updateError.message + ". Run supabase-orders-admin.sql in the Supabase SQL editor if you have not yet.");
+    }
+    setUpdatingOrder(null);
+  };
+
+  const productNameById = Object.fromEntries(products.map(p => [String(p.id), p.name]));
+  const pendingReviews = reviews.filter(r => r.status === "pending").length;
+  const visibleReviewRows = reviews.filter(r => reviewFilter === "all" || r.status === reviewFilter);
+  const soldOutCount = products.filter(p => (p.stock ?? 0) <= 0).length;
+  const lowStockCount = products.filter(p => p.stock > 0 && p.stock <= 5).length;
+
+  const setReviewStatus = async (r, status) => {
+    setError("");
+    const { error: e } = await supabase.from("reviews").update({ status }).eq("id", r.id);
+    if (e) { setError("Could not update the review: " + e.message + ". Run supabase-hardening.sql in the Supabase SQL editor if you have not yet."); return; }
+    setReviews(list => list.map(x => x.id === r.id ? { ...x, status } : x));
+  };
+  const deleteReview = async (r) => {
+    if (!window.confirm("Delete this review for good?")) return;
+    const { error: e } = await supabase.from("reviews").delete().eq("id", r.id);
+    if (e) { setError("Could not delete the review: " + e.message); return; }
+    setReviews(list => list.filter(x => x.id !== r.id));
+  };
+  const exportSubscribersCsv = () => {
+    const csv = ["Email,Subscribed", ...subscribers.map(x => `"${String(x.email).replace(/"/g, '""')}",${new Date(x.created_at).toISOString()}`)].join("\n");
+    const url = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8" }));
+    const a = document.createElement("a");
+    a.href = url; a.download = `claso-subscribers-${new Date().toISOString().slice(0, 10)}.csv`; a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const exportOrdersCsv = () => {
+    const esc = (v) => `"${String(v ?? "").replace(/"/g, '""')}"`;
+    const header = ["Order", "Placed", "Status", "Customer", "Phone", "Email", "Address", "Items", "Items total", "Delivery fee", "Total", "Profit"];
+    const rows = visibleOrders.map(o => [
+      orderNumber(o),
+      o.placed_at ? new Date(o.placed_at).toISOString() : "",
+      STATUS_LABELS[statusOf(o)] || statusOf(o),
+      o.customer_name, o.customer_phone, o.customer_email, o.customer_address,
+      (o.items || []).map(i => `${i.qty}x ${i.name}`).join("; "),
+      o.items_total, o.delivery_fee, o.total,
+      statusOf(o) === "cancelled" ? 0 : orderProfitInfo(o).profit,
+    ]);
+    const csv = [header, ...rows].map(r => r.map(esc).join(",")).join("\n");
+    const url = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8" }));
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `claso-orders-${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
 
   return (
     <div className="page page-enter">
@@ -234,6 +394,8 @@ function AdminPage({ setPage, user, setUser, authChecked }) {
           {[
             { id:"dashboard", icon:"📊", label:"Dashboard" },
             { id:"orders",    icon:"🧾", label:"Orders" },
+            { id:"reviews",   icon:"⭐", label:`Reviews${pendingReviews ? ` (${pendingReviews})` : ""}` },
+            { id:"subscribers", icon:"✉️", label:"Subscribers" },
             { id:"add",       icon:"➕", label:"Add Product" },
             { id:"products",  icon:"📦", label:"All Products" },
           ].map(n => (
@@ -262,8 +424,8 @@ function AdminPage({ setPage, user, setUser, authChecked }) {
               <div className="adm-page-sub">Overview of your CLASO product catalogue</div>
               <div className="adm-stats-grid">
                 {[
-                  { icon:"💰", val: fmtPKR(totalRevenue), label:"Total Revenue" },
-                  { icon:"📈", val: fmtPKR(totalProfit), label:"Total Profit" },
+                  { icon:"💰", val: fmtPKR(totalRevenue), label:"Total Sales" },
+                  { icon:"📈", val: fmtPKR(totalProfit), label:"Total Profit (sale price − cost)" },
                   { icon:"🧾", val: orders.length, label:"Total Orders" },
                   { icon:"📦", val: products.length, label:"Total Products" },
                 ].map(s => (
@@ -274,6 +436,23 @@ function AdminPage({ setPage, user, setUser, authChecked }) {
                   </div>
                 ))}
               </div>
+              {(soldOutCount > 0 || lowStockCount > 0) && (
+                <div className="adm-cost-warning">
+                  📦 {soldOutCount > 0 ? `${soldOutCount} product${soldOutCount === 1 ? " is" : "s are"} sold out` : ""}
+                  {soldOutCount > 0 && lowStockCount > 0 ? " and " : ""}
+                  {lowStockCount > 0 ? `${lowStockCount} ${lowStockCount === 1 ? "is" : "are"} running low (5 or fewer)` : ""}.
+                  Sold-out products cannot be ordered. Edit a product to update its stock.
+                </div>
+              )}
+              {pendingReviews > 0 && (
+                <div className="adm-cost-warning">⭐ {pendingReviews} customer review{pendingReviews === 1 ? " is" : "s are"} waiting for your approval in the Reviews tab.</div>
+              )}
+              {(profitTotals.missing > 0 || productsMissingCost > 0) && (
+                <div className="adm-cost-warning">
+                  ⚠️ Profit leaves out {profitTotals.missing > 0 ? `${profitTotals.missing} sold item${profitTotals.missing === 1 ? "" : "s"}` : "nothing yet"} because {productsMissingCost} product{productsMissingCost === 1 ? " has" : "s have"} no manufacturing cost set.
+                  Open a product, add its manufacturing cost, and profit will include it.
+                </div>
+              )}
               <div className="adm-stats-grid">
                 {[
                   { icon:"✅", val: products.filter(p=>p.stock>0).length, label:"In Stock" },
@@ -313,7 +492,7 @@ function AdminPage({ setPage, user, setUser, authChecked }) {
                         <td>
                           <div className="adm-product-info">
                             <div className="adm-product-thumb">
-                              {p.images?.[0] ? <img src={p.images[0]} alt="" style={{width:"100%",height:"100%",objectFit:"cover",borderRadius:"10px"}} /> : (p.emoji || "🛍️")}
+                              {p.images?.[0] ? <img src={p.images[0]} alt="" style={{width:"100%",height:"100%",objectFit:"contain",borderRadius:"10px"}} /> : (p.emoji || "🛍️")}
                             </div>
                             <div>
                               <div className="adm-product-name">{p.name}</div>
@@ -337,12 +516,29 @@ function AdminPage({ setPage, user, setUser, authChecked }) {
           {view === "orders" && (
             <>
               <div className="adm-page-title">Orders</div>
-              <div className="adm-page-sub">Every order placed through the storefront</div>
+              <div className="adm-page-sub">Every order placed through the storefront, saved in your database</div>
+
+              <div className="adm-order-summary">
+                <div className="adm-order-stat"><div className="adm-order-stat-num">{orders.length}</div><div className="adm-order-stat-label">All orders</div></div>
+                <div className="adm-order-stat"><div className="adm-order-stat-num">{pendingCount}</div><div className="adm-order-stat-label">Pending</div></div>
+                <div className="adm-order-stat"><div className="adm-order-stat-num">{fmtPKR(totalRevenue)}</div><div className="adm-order-stat-label">Sales (excl. cancelled)</div></div>
+              </div>
+
               <div className="adm-table-card">
-                <div className="adm-table-head">
+                <div className="adm-table-head" style={{ flexWrap: "wrap", gap: "12px" }}>
                   <div style={{display:"flex",alignItems:"center"}}>
-                    <span className="adm-table-title">All Orders</span>
-                    <span className="adm-table-count">{orders.length}</span>
+                    <span className="adm-table-title">Order history</span>
+                    <span className="adm-table-count">{visibleOrders.length}</span>
+                  </div>
+                  <div className="adm-order-toolbar">
+                    <input className="adm-input adm-order-search" placeholder="Search name, phone, product, order #" value={orderSearch} onChange={e => setOrderSearch(e.target.value)} />
+                    <select className="adm-select adm-order-filter" value={orderStatus} onChange={e => setOrderStatus(e.target.value)}>
+                      <option value="all">All statuses</option>
+                      <option value="pending">Pending</option>
+                      <option value="delivered">Fulfilled</option>
+                      <option value="cancelled">Cancelled</option>
+                    </select>
+                    <button className="adm-btn-secondary" onClick={exportOrdersCsv} disabled={visibleOrders.length === 0}>Export CSV</button>
                   </div>
                 </div>
                 {loadingOrders ? (
@@ -353,27 +549,152 @@ function AdminPage({ setPage, user, setUser, authChecked }) {
                     <div className="adm-empty-text">No orders yet</div>
                     <div className="adm-empty-sub">Orders placed at checkout will show up here</div>
                   </div>
+                ) : visibleOrders.length === 0 ? (
+                  <div className="adm-empty">
+                    <div className="adm-empty-text">No orders match your search</div>
+                  </div>
                 ) : (
                   <table className="adm-table">
                     <thead><tr>
-                      <th>Customer</th><th>Phone</th><th>Items</th><th>Total</th><th>Status</th><th>Placed</th>
+                      <th>Order</th><th>Customer</th><th>Items</th><th>Total</th><th>Status</th><th>Placed</th>
                     </tr></thead>
-                    <tbody>{orders.map(o => (
-                      <tr key={o.id}>
-                        <td>
-                          <div className="adm-product-name">{o.customer_name || "—"}</div>
-                          <div className="adm-product-brand" style={{maxWidth:"220px",whiteSpace:"normal"}}>{o.customer_address}</div>
-                        </td>
-                        <td style={{color:"var(--adm-muted)",fontSize:"13px"}}>{o.customer_phone || "—"}</td>
-                        <td style={{color:"var(--adm-muted)",fontSize:"13px"}}>
-                          {(o.items || []).map((it,i) => (
-                            <div key={i}>{it.qty}× {it.name}</div>
-                          ))}
-                        </td>
-                        <td style={{fontWeight:600}}>{fmtPKR(o.total || 0)}</td>
-                        <td><span className={`adm-stock-badge ${o.status === "delivered" ? "in" : o.status === "cancelled" ? "out" : "low"}`}>{o.status || "pending"}</span></td>
-                        <td style={{color:"var(--adm-muted)",fontSize:"13px"}}>{o.placed_at ? new Date(o.placed_at).toLocaleString() : "—"}</td>
-                      </tr>
+                    <tbody>{visibleOrders.map(o => (
+                      <Fragment key={o.id}>
+                        <tr className="adm-order-row" onClick={() => setExpandedOrder(expandedOrder === o.id ? null : o.id)}>
+                          <td style={{fontWeight:600}}>{orderNumber(o)}</td>
+                          <td>
+                            <div className="adm-product-name">{o.customer_name || "—"}</div>
+                            <div className="adm-product-brand">{o.customer_phone || "—"}</div>
+                          </td>
+                          <td style={{color:"var(--adm-muted)",fontSize:"13px"}}>
+                            {(o.items || []).slice(0, 2).map((it,i) => (<div key={i}>{it.qty}× {it.name}</div>))}
+                            {(o.items || []).length > 2 && <div>+{(o.items || []).length - 2} more</div>}
+                          </td>
+                          <td style={{fontWeight:600}}>{fmtPKR(o.total || 0)}</td>
+                          <td onClick={e => e.stopPropagation()}>
+                            <select
+                              className={`adm-select adm-status-select ${statusOf(o)}`}
+                              value={statusOf(o)}
+                              disabled={updatingOrder === o.id}
+                              onChange={e => updateOrderStatus(o, e.target.value)}
+                            >
+                              <option value="pending">Pending</option>
+                              <option value="delivered">Fulfilled</option>
+                              <option value="cancelled">Cancelled</option>
+                            </select>
+                          </td>
+                          <td style={{color:"var(--adm-muted)",fontSize:"13px"}}>{o.placed_at ? new Date(o.placed_at).toLocaleString() : "—"}</td>
+                        </tr>
+                        {expandedOrder === o.id && (
+                          <tr className="adm-order-detail">
+                            <td colSpan={6}>
+                              <div className="adm-order-detail-grid">
+                                <div>
+                                  <div className="adm-order-detail-title">Customer</div>
+                                  <div>{o.customer_name || "—"}</div>
+                                  <div>{o.customer_phone || "—"}</div>
+                                  <div>{o.customer_email || "—"}</div>
+                                  <div style={{marginTop:"6px"}}>{o.customer_address || "—"}</div>
+                                </div>
+                                <div>
+                                  <div className="adm-order-detail-title">Items</div>
+                                  {(o.items || []).map((it, i) => (
+                                    <div key={i} className="adm-order-line">
+                                      <span>{it.qty}× {it.name}{it.brand ? ` (${it.brand})` : ""}</span>
+                                      <span>{fmtPKR(parsePrice(it.price) * (it.qty || 1))}</span>
+                                    </div>
+                                  ))}
+                                  <div className="adm-order-line adm-order-line-sum"><span>Items</span><span>{fmtPKR(o.items_total || 0)}</span></div>
+                                  <div className="adm-order-line adm-order-line-sum"><span>Delivery fee</span><span>{fmtPKR(o.delivery_fee || 0)}</span></div>
+                                  <div className="adm-order-line adm-order-line-sum" style={{fontWeight:700}}><span>Total</span><span>{fmtPKR(o.total || 0)}</span></div>
+                                  {statusOf(o) !== "cancelled" && (() => {
+                                    const info = orderProfitInfo(o);
+                                    return (
+                                      <div className="adm-order-line adm-order-line-sum">
+                                        <span>Profit (sale price − cost){info.missing > 0 ? ` · ${info.missing} item${info.missing === 1 ? "" : "s"} without a cost` : ""}</span>
+                                        <span>{fmtPKR(info.profit)}</span>
+                                      </div>
+                                    );
+                                  })()}
+                                </div>
+                              </div>
+                            </td>
+                          </tr>
+                        )}
+                      </Fragment>
+                    ))}</tbody>
+                  </table>
+                )}
+              </div>
+            </>
+          )}
+
+          {/* REVIEWS */}
+          {view === "reviews" && (
+            <>
+              <div className="adm-page-title">Reviews</div>
+              <div className="adm-page-sub">Customer reviews only appear on the site after you approve them</div>
+              <div className="adm-table-card">
+                <div className="adm-table-head" style={{ flexWrap: "wrap", gap: "12px" }}>
+                  <div style={{display:"flex",alignItems:"center"}}>
+                    <span className="adm-table-title">Reviews</span>
+                    <span className="adm-table-count">{visibleReviewRows.length}</span>
+                  </div>
+                  <select className="adm-select adm-order-filter" value={reviewFilter} onChange={e => setReviewFilter(e.target.value)}>
+                    <option value="pending">Waiting for approval</option>
+                    <option value="approved">Approved</option>
+                    <option value="rejected">Rejected</option>
+                    <option value="all">All</option>
+                  </select>
+                </div>
+                {visibleReviewRows.length === 0 ? (
+                  <div className="adm-empty"><div className="adm-empty-icon">⭐</div><div className="adm-empty-text">Nothing here</div></div>
+                ) : (
+                  <div className="adm-review-list">
+                    {visibleReviewRows.map(r => (
+                      <div key={r.id} className="adm-review-item">
+                        <div className="adm-review-top">
+                          <div>
+                            <div className="adm-product-name">{productNameById[String(r.product_id)] || "Deleted product"}</div>
+                            <div className="adm-product-brand">{"★".repeat(r.rating)}{"☆".repeat(5 - r.rating)} · {r.reviewer_name}{r.city ? `, ${r.city}` : ""} · {new Date(r.created_at).toLocaleDateString()}</div>
+                          </div>
+                          <span className={`adm-status-pill ${r.status}`}>{r.status}</span>
+                        </div>
+                        {r.title && <div style={{ fontWeight: 600, marginTop: "8px" }}>{r.title}</div>}
+                        <div className="adm-review-body">{r.body}</div>
+                        <div style={{ display: "flex", gap: "8px", marginTop: "12px", flexWrap: "wrap" }}>
+                          {r.status !== "approved" && <button className="adm-btn-primary" onClick={() => setReviewStatus(r, "approved")}>Approve</button>}
+                          {r.status !== "rejected" && <button className="adm-btn-secondary" onClick={() => setReviewStatus(r, "rejected")}>Reject</button>}
+                          <button className="adm-btn-secondary" onClick={() => deleteReview(r)}>Delete</button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </>
+          )}
+
+          {/* SUBSCRIBERS */}
+          {view === "subscribers" && (
+            <>
+              <div className="adm-page-title">Subscribers</div>
+              <div className="adm-page-sub">People who joined the newsletter from the website</div>
+              <div className="adm-table-card">
+                <div className="adm-table-head">
+                  <div style={{display:"flex",alignItems:"center"}}>
+                    <span className="adm-table-title">Email list</span>
+                    <span className="adm-table-count">{subscribers.length}</span>
+                  </div>
+                  <button className="adm-btn-secondary" onClick={exportSubscribersCsv} disabled={subscribers.length === 0}>Export CSV</button>
+                </div>
+                {subscribers.length === 0 ? (
+                  <div className="adm-empty"><div className="adm-empty-icon">✉️</div><div className="adm-empty-text">No subscribers yet</div></div>
+                ) : (
+                  <table className="adm-table">
+                    <thead><tr><th>Email</th><th>Joined</th></tr></thead>
+                    <tbody>{subscribers.map(x => (
+                      <tr key={x.id}><td>{x.email}</td><td style={{color:"var(--adm-muted)",fontSize:"13px"}}>{new Date(x.created_at).toLocaleString()}</td></tr>
                     ))}</tbody>
                   </table>
                 )}
@@ -432,6 +753,11 @@ function AdminPage({ setPage, user, setUser, authChecked }) {
                   <div className="adm-field">
                     <label className="adm-field-label">Original Price (optional)</label>
                     <input className="adm-input" placeholder="e.g. PKR 5,500 — shown crossed out" value={form.oldPrice} onChange={e=>setField("oldPrice",e.target.value)} />
+                  </div>
+                  <div className="adm-field">
+                    <label className="adm-field-label">Manufacturing cost (PKR)</label>
+                    <input className="adm-input" inputMode="numeric" placeholder="What one unit costs you, e.g. 2,800" value={form.manufacturingCost} onChange={e=>setField("manufacturingCost",e.target.value)} />
+                    <div style={{fontSize:"11px",color:"var(--adm-muted)",marginTop:"6px"}}>Used for profit (sale price minus this). Never shown to customers.</div>
                   </div>
                   <div className="adm-field span-2">
                     <label className="adm-field-label">Description</label>
@@ -532,14 +858,14 @@ function AdminPage({ setPage, user, setUser, authChecked }) {
                 ) : (
                   <table className="adm-table">
                     <thead><tr>
-                      <th>Product</th><th>Category</th><th>Price</th><th>Stock</th><th>Weight</th><th>Actions</th>
+                      <th>Product</th><th>Category</th><th>Price</th><th>Cost</th><th>Profit / unit</th><th>Stock</th><th>Weight</th><th>Actions</th>
                     </tr></thead>
                     <tbody>{products.map(p => (
                       <tr key={p.id}>
                         <td>
                           <div className="adm-product-info">
                             <div className="adm-product-thumb">
-                              {p.images?.[0] ? <img src={p.images[0]} alt="" style={{width:"100%",height:"100%",objectFit:"cover",borderRadius:"10px"}} /> : (p.emoji || "🛍️")}
+                              {p.images?.[0] ? <img src={p.images[0]} alt="" style={{width:"100%",height:"100%",objectFit:"contain",borderRadius:"10px"}} /> : (p.emoji || "🛍️")}
                             </div>
                             <div>
                               <div className="adm-product-name">{p.name}</div>
@@ -549,6 +875,8 @@ function AdminPage({ setPage, user, setUser, authChecked }) {
                         </td>
                         <td style={{color:"var(--adm-muted)",fontSize:"13px"}}>{p.category}</td>
                         <td style={{fontWeight:600}}>{p.price}</td>
+                        <td style={{fontSize:"13px",color:"var(--adm-muted)"}}>{p.manufacturing_cost > 0 ? fmtPKR(p.manufacturing_cost) : "Not set"}</td>
+                        <td style={{fontSize:"13px",fontWeight:600,color: p.manufacturing_cost > 0 ? "var(--adm-primary)" : "var(--adm-muted)"}}>{p.manufacturing_cost > 0 ? fmtPKR(parsePrice(p.price) - p.manufacturing_cost) : "—"}</td>
                         <td><span className={`adm-stock-badge ${stockBadge(p.stock)}`}>{stockLabel(p.stock)}</span></td>
                         <td style={{color:"var(--adm-muted)",fontSize:"13px"}}>{p.weight ? `${p.weight} ${p.weightUnit}` : "—"}</td>
                         <td>

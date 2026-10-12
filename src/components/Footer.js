@@ -1,3 +1,6 @@
+import Link from "next/link";
+import { pageToPath } from "../lib/routes.js";
+
 const SHOP_LINKS = [
   { label: "Skincare",   page: "skincare"   },
   { label: "Makeup",     page: "makeup"     },
@@ -17,7 +20,7 @@ const ABOUT_LINKS = [
 
 function Footer({ setPage }) {
   const renderLinks = (links) => links.map(l => (
-    <li key={l.label} onClick={() => setPage(l.page)}>{l.label}</li>
+    <li key={l.label}><Link href={pageToPath(l.page)} className="footer-link-a">{l.label}</Link></li>
   ));
 
   return (
@@ -44,8 +47,8 @@ function Footer({ setPage }) {
         <div>
           <div className="footer-copy">© 2026 CLASO. All rights reserved. Made with 💄 in Pakistan.</div>
           <div className="footer-legal">
-            <span onClick={() => setPage("privacy")}>Privacy Policy</span>
-            <span onClick={() => setPage("terms")}>Terms of Service</span>
+            <Link href="/privacy" className="footer-link-a">Privacy Policy</Link>
+            <Link href="/terms" className="footer-link-a">Terms of Service</Link>
           </div>
         </div>
       </div>

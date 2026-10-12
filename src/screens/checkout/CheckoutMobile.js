@@ -1,4 +1,5 @@
 import { useState } from "react";
+import ItemThumb from "../../components/ItemThumb.js";
 
 function CheckoutMobile({ setPage, cart, updateCartQty, removeFromCart, cartTotal, logic }) {
   const {
@@ -75,7 +76,7 @@ function CheckoutMobile({ setPage, cart, updateCartQty, removeFromCart, cartTota
                 const unit  = parseInt((item.price || "").replace(/[^0-9]/g, "")) || 0;
                 return (
                   <div key={item.id} className={`com-item ${theme}`}>
-                    <div className="com-item-emoji">{item.emoji || "🛍️"}</div>
+                    <div className="com-item-emoji"><ItemThumb item={item} /></div>
                     <div className="com-item-body">
                       <div className="com-item-name">{item.name}</div>
                       <div className="com-item-price">{fmt(unit * item.qty)}</div>
@@ -109,6 +110,7 @@ function CheckoutMobile({ setPage, cart, updateCartQty, removeFromCart, cartTota
             <input
               className={`com-input ${errors.name ? "error" : ""}`}
               placeholder="e.g. Ayesha Khan"
+                  autoComplete="name"
               value={form.name}
               onChange={e => setField("name", e.target.value)}
             />
@@ -121,6 +123,8 @@ function CheckoutMobile({ setPage, cart, updateCartQty, removeFromCart, cartTota
               className={`com-input ${errors.email ? "error" : ""}`}
               type="email"
               placeholder="you@example.com"
+                  autoComplete="email"
+                  inputMode="email"
               value={form.email}
               onChange={e => setField("email", e.target.value)}
             />
@@ -136,18 +140,19 @@ function CheckoutMobile({ setPage, cart, updateCartQty, removeFromCart, cartTota
                 type="tel"
                 inputMode="numeric"
                 placeholder="03XXXXXXXXX"
+                    autoComplete="tel"
                 value={form.phone}
                 onChange={e => setField("phone", e.target.value)}
               />
             </div>
             {errors.phone && <div className="com-field-error">⚠ {errors.phone}</div>}
-            <div className="com-hint">We'll message you here to confirm</div>
+            <div className="com-hint">We may call or message you here to confirm your order</div>
           </div>
 
           <div className="com-field">
             <label className="com-label">Delivery Address</label>
             <textarea
-              className={`com-textarea ${errors.address ? "error" : ""}`}
+              autoComplete="street-address" className={`com-textarea ${errors.address ? "error" : ""}`}
               placeholder="House/flat no., street, area, city…"
               value={form.address}
               onChange={e => setField("address", e.target.value)}

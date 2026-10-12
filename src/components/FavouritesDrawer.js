@@ -1,3 +1,4 @@
+import ItemThumb from "./ItemThumb.js";
 
 function FavouritesDrawer({ favourites, toggleFavourite, addToCart, recentOrders, onClose, onViewOrders }) {
   const getTheme = (item) => {
@@ -31,7 +32,7 @@ function FavouritesDrawer({ favourites, toggleFavourite, addToCart, recentOrders
               const theme = getTheme(item);
               return (
                 <div key={item.id} className={`fav-item ${theme}`}>
-                  <div className="fav-item-emoji">{item.emoji || "🛍️"}</div>
+                  <div className="fav-item-emoji"><ItemThumb item={item} /></div>
                   <div className="fav-item-body">
                     <div className="fav-item-brand">{item.brand || "CLASO"}</div>
                     <div className="fav-item-name">{item.name}</div>
@@ -56,7 +57,7 @@ function FavouritesDrawer({ favourites, toggleFavourite, addToCart, recentOrders
             <>
               {(recentOrders || []).filter(o => o && Array.isArray(o.items)).slice(0, 3).flatMap(order => order.items).slice(0, 8).map((item, i) => (
                 <div key={i} className="recent-item">
-                  <div className="recent-emoji">{item.emoji || "🛍️"}</div>
+                  <div className="recent-emoji"><ItemThumb item={item} /></div>
                   <div className="recent-name">{item.name}</div>
                   <div className="recent-price">{item.price}</div>
                 </div>

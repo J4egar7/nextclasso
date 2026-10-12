@@ -1,38 +1,12 @@
 "use client";
 
-import { createContext, useContext, useState, useEffect, useCallback } from "react";
+import { createContext, useContext, useState, useEffect, useCallback, useRef } from "react";
 import { supabase } from "./supabase.js";
+import { PUBLIC_COLUMNS, mapRowToProduct } from "./productMapper.js";
 
 const StoreContext = createContext(null);
 
-// DB rows are snake_case; the rest of the app (built for the old Firestore
-// shape) expects camelCase — map once here so nothing else has to change.
-function mapRowToProduct(row) {
-  return {
-    id: row.id,
-    name: row.name,
-    brand: row.brand,
-    category: row.category,
-    price: row.price,
-    priceNum: row.price_num,
-    old: row.old_price,
-    stock: row.stock,
-    description: row.description,
-    desc: row.description,
-    weight: row.weight,
-    weightUnit: row.weight_unit,
-    images: row.images || [],
-    emoji: row.emoji,
-    bg: row.bg,
-    badge: row.badge,
-    rating: row.rating,
-    reviews: row.reviews,
-    purchases: row.purchases,
-    views: row.views,
-  };
-}
-
-export function StoreProvider({ children }) {
+export function StoreProvider({ children, initialProducts = null }) {
   const [cart, setCart]                   = useState([]);
   const [favourites, setFavourites]       = useState([]);
   const [recentOrders, setRecentOrders]   = useState([]);
@@ -49,8 +23,8 @@ export function StoreProvider({ children }) {
   // only admin-added products, merged in each screen with a hardcoded
   // catalog import. That hardcoded catalog is gone; this is the full
   // storefront catalog now.
-  const [products, setProducts]           = useState([]);
-  const [productsLoaded, setProductsLoaded] = useState(false);
+  const [products, setProducts]           = useState(initialProducts || []);
+  const [productsLoaded, setProductsLoaded] = useState(Array.isArray(initialProducts));
   const [cartOpen, setCartOpen]           = useState(false);
   const [favOpen, setFavOpen]             = useState(false);
 
@@ -78,7 +52,6 @@ export function StoreProvider({ children }) {
   // (and is now also blocked at the database level even if it were asked
   // for — see supabase-schema.sql).
   useEffect(() => {
-    const PUBLIC_COLUMNS = "id, name, brand, category, price, price_num, old_price, stock, description, weight, weight_unit, images, emoji, bg, badge, rating, reviews, purchases, views";
 
     supabase.from("products").select(PUBLIC_COLUMNS).then(({ data, error }) => {
       if (error) { console.error("Failed to load products:", error); setProductsLoaded(true); return; }
@@ -136,25 +109,67 @@ export function StoreProvider({ children }) {
     return () => { cancelled = true; authListener?.subscription?.unsubscribe(); };
   }, []);
 
+  const toastTimer = useRef(null);
   const showToast = useCallback((msg) => {
     setToast(msg); setToastVisible(true);
-    setTimeout(() => setToastVisible(false), 2800);
+    if (toastTimer.current) clearTimeout(toastTimer.current);
+    toastTimer.current = setTimeout(() => setToastVisible(false), 3200);
   }, []);
 
+  // Stock-aware: a sold-out product cannot be added, and the quantity can
+  // never go above what is in stock. (The database enforces the same rules,
+  // this just tells the customer straight away.)
+  const stockOf = (item) => (Number.isFinite(item?.stock) ? item.stock : Infinity);
+
   const addToCart = useCallback((product, pageTag) => {
+    const stock = stockOf(product);
+    if (stock <= 0) { showToast(`${product.name} is sold out`); return; }
+    const existing = cart.find(i => i.id === product.id);
+    if (existing && existing.qty + 1 > stock) {
+      showToast(`Only ${stock} of ${product.name} available`);
+      return;
+    }
     setCart(c => {
-      const existing = c.find(i => i.id === product.id);
-      if (existing) return c.map(i => i.id === product.id ? { ...i, qty: i.qty + 1 } : i);
+      const inCart = c.find(i => i.id === product.id);
+      if (inCart) return c.map(i => i.id === product.id ? { ...i, qty: i.qty + 1 } : i);
       return [...c, { ...product, _pageTag: pageTag || product._pageTag, qty: 1 }];
     });
     showToast(`Added ${product.name} to cart ✓`);
-  }, [showToast]);
+  }, [cart, showToast]);
 
   const removeFromCart = useCallback((id) => setCart(c => c.filter(i => i.id !== id)), []);
 
   const updateCartQty = useCallback((id, delta) => {
+    const item = cart.find(i => i.id === id);
+    if (item && delta > 0 && item.qty + delta > stockOf(item)) {
+      showToast(`Only ${stockOf(item)} of ${item.name} available`);
+      return;
+    }
     setCart(c => c.map(i => i.id === id ? { ...i, qty: Math.max(1, i.qty + delta) } : i).filter(i => i.qty > 0));
-  }, []);
+  }, [cart, showToast]);
+
+  // Keep the cart honest. A cart saved in the browser can be days old, so
+  // whenever the live catalogue arrives, refresh each item's price and stock
+  // from it and drop anything that has been deleted or sold out.
+  useEffect(() => {
+    if (!productsLoaded || cart.length === 0) return;
+    const byId = new Map(products.map(p => [String(p.id), p]));
+    const removed = [];
+    let changed = false;
+    const next = [];
+    for (const item of cart) {
+      const fresh = byId.get(String(item.id));
+      if (!fresh || fresh.stock <= 0) { removed.push(item.name); changed = true; continue; }
+      const qty = Math.min(item.qty, fresh.stock);
+      if (qty !== item.qty || fresh.price !== item.price || fresh.stock !== item.stock || fresh.name !== item.name) changed = true;
+      next.push({ ...item, name: fresh.name, brand: fresh.brand, price: fresh.price, priceNum: fresh.priceNum,
+        images: fresh.images, emoji: fresh.emoji, bg: fresh.bg, accent: fresh.accent, stock: fresh.stock, qty });
+    }
+    if (!changed) return;
+    setCart(next);
+    if (removed.length) showToast(`${removed.join(", ")} ${removed.length === 1 ? "is" : "are"} no longer available and was removed from your cart`);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [products, productsLoaded]);
 
   const toggleFavourite = useCallback((product) => {
     setFavourites(f => {
@@ -170,28 +185,16 @@ export function StoreProvider({ children }) {
   const cartTotal = cart.reduce((sum, i) => sum + (parseInt((i.price || "").replace(/[^0-9]/g, "")) || 0) * i.qty, 0);
   const cartCount = cart.reduce((sum, i) => sum + i.qty, 0);
 
-  // Places the order two places: written to Supabase via the place_order()
-  // RPC (the real, shared record the admin dashboard reads from), and kept
-  // in localStorage too (so "My Orders" still works instantly for the
-  // customer without needing an account).
+  // Saves the order to Supabase through the place_order() RPC. The database
+  // is the source of truth: the server recalculates the totals from real
+  // catalog prices, and the admin dashboard reads these same rows. A copy
+  // is also kept in this browser so the customer's "Your Orders" page works
+  // without an account.
   //
-  // Uses supabase.rpc("place_order", ...) rather than a raw
-  // .from("orders").insert() — a raw insert's RETURNING clause requires
-  // the calling (anon) role to be able to read back the row it just
-  // wrote, which it can't under RLS (customers aren't allowed to read
-  // the order list), so that insert always failed silently before this
-  // fix. The RPC runs server-side and hands back just the one order it
-  // created. The server also recalculates items_total/delivery_fee/total
-  // from real catalog prices rather than trusting what this client sent —
-  // see recalculate_order_total() in supabase-schema.sql — so `order`
-  // below reflects the verified total, which is what's shown to the
-  // customer and should match unless a price changed mid-checkout.
-  //
-  // If the Supabase call fails for some reason (offline, etc.), the order
-  // still completes locally rather than blocking checkout — but is
-  // logged so it's not silently lost.
+  // If the save fails, this returns null and the customer stays on the
+  // review step with an error, so nobody is told "order placed" for an
+  // order the shop will never see.
   const placeOrder = useCallback(async (customer) => {
-    const deliveryFee = cartTotal >= 5000 ? 0 : 250;
     const items = cart.map(i => ({
       product_id: i.id, name: i.name, brand: i.brand, price: i.price,
       qty: i.qty, bg: i.bg, emoji: i.emoji,
@@ -205,21 +208,37 @@ export function StoreProvider({ children }) {
       p_items: items,
     });
 
-    if (error) console.error("Order failed to save to Supabase (kept locally only):", error);
     const saved = Array.isArray(data) ? data[0] : data;
+    if (error || !saved?.id) {
+      console.error("Order could not be saved:", error);
+      // Our own database rules (stock, limits) write customer-friendly
+      // messages, so those are shown as they are. Anything else stays generic.
+      const msg = String(error?.message || "");
+      const friendly = /out of stock|fewer than|too many orders|quantity must|at least one item|too many different/i.test(msg);
+      showToast(friendly ? msg : "We couldn't place your order. Please check your connection and try again.");
+      if (friendly) {
+        supabase.from("products").select(PUBLIC_COLUMNS).then(({ data, error: e2 }) => {
+          if (!e2) setProducts((data || []).map(mapRowToProduct));
+        });
+      }
+      return null;
+    }
 
     const order = {
-      id: saved?.id || `local-${Date.now()}`,
-      items: (saved?.items || items).map(i => ({ id: i.product_id, name: i.name, brand: i.brand, price: i.price, qty: i.qty, bg: i.bg, emoji: i.emoji })),
-      itemsTotal: saved?.items_total ?? cartTotal,
-      deliveryFee: saved?.delivery_fee ?? deliveryFee,
-      total: saved?.total ?? (cartTotal + deliveryFee),
-      placedAt: saved?.placed_at ? new Date(saved.placed_at).getTime() : Date.now(),
+      id: saved.id,
+      items: (saved.items || items).map(i => ({
+        id: i.product_id, name: i.name, brand: i.brand, price: i.price, qty: i.qty, bg: i.bg, emoji: i.emoji,
+        image: cart.find(c => String(c.id) === String(i.product_id))?.images?.[0] || null,
+      })),
+      itemsTotal: saved.items_total,
+      deliveryFee: saved.delivery_fee,
+      total: saved.total,
+      placedAt: saved.placed_at ? new Date(saved.placed_at).getTime() : Date.now(),
     };
     setRecentOrders(o => [order, ...o]);
     setCart([]);
     return order;
-  }, [cart, cartTotal]);
+  }, [cart, showToast]);
 
   const value = {
     cart, favourites, recentOrders, toast, toastVisible, user, setUser, authChecked,

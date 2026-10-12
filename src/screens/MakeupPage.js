@@ -1,7 +1,7 @@
 import { useState } from "react";
-import { makeupReviews } from "../data/reviews.js";
 import { makeupConcerns, shades } from "../data/filters.js";
 import { MAKEUP_CATEGORIES } from "../data/constants.js";
+import Link from "next/link";
 
 function MakeupPage({ addToCart, goToProducts, toggleFavourite, isFav, openProduct, products }) {
   // All makeup products now come straight from Supabase — a product
@@ -90,17 +90,17 @@ function MakeupPage({ addToCart, goToProducts, toggleFavourite, isFav, openProdu
   );
 
   const ProductCard = ({ p }) => (
-    <div className="make-product-card" onClick={() => openProduct({ ...p, _prevPage: "makeup" })}>
+    <div className="make-product-card" style={{ "--accent": p.accent }} data-soldout={p.stock <= 0 ? "true" : undefined} onClick={() => openProduct({ ...p, _prevPage: "makeup" })}>
       <div className="make-img" style={{ background: p.bg }}>
         {p.images?.[0]
-          ? <img src={p.images[0]} alt={p.name} style={{ width:"100%", height:"100%", objectFit:"cover", position:"absolute", inset:0 }} />
+          ? <img src={p.images[0]} alt={p.name} loading="lazy" decoding="async" style={{ width:"100%", height:"100%", objectFit:"contain", position:"absolute", inset:0 }} />
           : <span style={{fontSize:'52px'}}>{p.emoji}</span>}
         {p.badge && <div className="make-badge">{p.badge}</div>}
-        <button className="product-wish-btn" onClick={e => { e.stopPropagation(); toggleFavourite({ ...p, _pageTag: "makeup" }); }}>{isFav(p.id) ? "❤️" : "🤍"}</button>
+        <button className="product-wish-btn" aria-label={`Save ${p.name}`} onClick={e => { e.stopPropagation(); toggleFavourite({ ...p, _pageTag: "makeup" }); }}>{isFav(p.id) ? "❤️" : "🤍"}</button>
       </div>
       <div className="make-info">
         <div className="make-brand">{p.brand}</div>
-        <div className="make-name">{p.name}</div>
+        <div className="make-name"><Link href={`/product/${p.id}?from=makeup`} className="plink" onClick={e => e.stopPropagation()}>{p.name}</Link></div>
         <div className="make-desc">{p.desc}</div>
         <div style={{display:"flex",alignItems:"center",gap:"5px",marginBottom:"10px"}}>
           <span style={{color:"#FF6BC8",fontSize:"12px"}}>{"★".repeat(Math.floor(p.rating))}</span>
@@ -108,7 +108,7 @@ function MakeupPage({ addToCart, goToProducts, toggleFavourite, isFav, openProdu
         </div>
         <div className="make-footer">
           <div className="make-price">{p.price}</div>
-          <button className="add-btn-make" onClick={e => { e.stopPropagation(); addToCart(p); }}>+</button>
+          <button className="add-btn-make" aria-label={`Add ${p.name} to cart`} onClick={e => { e.stopPropagation(); addToCart(p); }}>+</button>
         </div>
       </div>
     </div>
@@ -287,28 +287,6 @@ function MakeupPage({ addToCart, goToProducts, toggleFavourite, isFav, openProdu
           {activeFilterCount > 0 && <span className="mf-trigger-count">{activeFilterCount}</span>}
         </button>
       )}
-
-      {/* MAKEUP QUOTES */}
-      <section className="reviews-section" style={{ background: "var(--make-dark)" }}>
-        <div className="reviews-header">
-          <div className="reviews-eyebrow" style={{ color: "#FF6BC8" }}>✦ Bold Stories, Real Looks</div>
-          <h2 className="reviews-title">Our makeup lovers <br/><em>speak for themselves</em></h2>
-        </div>
-        <div className="reviews-track-outer">
-          <div className="reviews-track">
-            {[...makeupReviews, ...makeupReviews].map((r, i) => (
-              <div key={i} className="review-card">
-                <div className="review-stars" style={{ color: "#FF6BC8" }}>{"★".repeat(r.rating)}</div>
-                <p className="review-text">"{r.text}"</p>
-                <div className="review-author">
-                  <div className="review-avatar" style={{ background: "rgba(233,30,140,0.2)" }}>{r.avatar}</div>
-                  <div><div className="review-name">{r.name}</div><div className="review-product">{r.product}</div></div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
 
       {/* MAKEUP MANIFESTO */}
       <div style={{ background: "var(--make-light)", padding: "clamp(48px, 10vw, 100px) 8vw", textAlign: "center" }}>

@@ -18,6 +18,7 @@ export const pageToPath = (id) => {
     case "returns":     return "/returns";
     case "contact":     return "/contact";
     case "faq":         return "/faq";
+    case "search":      return "/search";
     default:            return "/";
   }
 };
@@ -41,5 +42,6 @@ export const pathToPage = (pathname) => {
   if (pathname.startsWith("/returns")) return "returns";
   if (pathname.startsWith("/contact")) return "contact";
   if (pathname.startsWith("/faq")) return "faq";
+  if (pathname.startsWith("/search")) return "search";
   return "home";
 };

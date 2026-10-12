@@ -1,6 +1,9 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
+  // Do not advertise the framework in a response header.
+  poweredByHeader: false,
+  compress: true,
 
   async headers() {
     return [
@@ -19,6 +22,8 @@ const nextConfig = {
           { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=(), payment=()" },
           // Force HTTPS on repeat visits (Vercel already serves HTTPS-only,
           // this pins it in the browser too).
+          { key: "X-DNS-Prefetch-Control", value: "on" },
+          { key: "Cross-Origin-Opener-Policy", value: "same-origin-allow-popups" },
           { key: "Strict-Transport-Security", value: "max-age=63072000; includeSubDomains; preload" },
         ],
       },

@@ -45,6 +45,7 @@ function useCheckoutLogic({ cart, cartTotal, placeOrder }) {
   const confirmOrder = async () => {
     setPlacingOrder(true);
     const order = await placeOrder({ name: form.name, email: form.email, phone: form.phone, address: form.address });
+    if (!order) { setPlacingOrder(false); return; } // save failed: stay here, a message has been shown
     setPlacedOrder(order);
     setStep("success");
     setPlacingOrder(false);
