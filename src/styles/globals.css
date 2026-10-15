@@ -4837,22 +4837,21 @@ div[style*="width: 40px"] > .item-thumb-img { width: 40px; height: 40px; }
               0 16px 40px color-mix(in srgb, var(--accent, #999) 40%, transparent);
 }
 
-/* Photos with a white background melt into the card colour instead of
-   sitting on it as a white box */
+/* Photos sit on a neutral white background with no blend mode, so bottles
+   keep their true colours. */
+.dt-card-img, .mb-card-img, .skin-img, .make-img, .pdp-main-img, .pdp-related-img { background: #fff !important; }
 .dt-card-img > img, .mb-card-img > img, .skin-img > img, .make-img > img,
-.pdp-main-img > img, .pdp-related-img > img {
-  mix-blend-mode: multiply;
-}
+.pdp-main-img > img, .pdp-related-img > img { mix-blend-mode: normal; }
 
 /* Brand label, badge and add button pick up the product colour */
-.dt-card-brand, .mb-card-brand, .skin-brand, .make-brand { color: var(--accent, inherit) !important; }
+.dt-card-brand, .mb-card-brand, .skin-brand, .make-brand { color: #5B21B6 !important; }
 .dt-card .product-badge, .mb-card .product-badge, .skin-product-card .skin-badge, .make-product-card .make-badge {
   background: var(--accent, var(--home-primary)) !important;
   color: #fff !important;
 }
 .dt-card .add-btn, .mb-card .add-btn, .skin-product-card .add-btn-skin, .make-product-card .add-btn-make {
   background: var(--accent, var(--home-primary)) !important;
-  box-shadow: 0 6px 14px color-mix(in srgb, var(--accent, #999) 45%, transparent);
+  box-shadow: 0 0 0 3px #fff, 0 6px 14px color-mix(in srgb, var(--accent, #999) 45%, transparent);
 }
 .pdp-main-img {
   border: 2px solid color-mix(in srgb, var(--accent, #d9d9d9) 65%, transparent);
@@ -4967,3 +4966,41 @@ input:focus-visible, textarea:focus-visible, select:focus-visible { outline-offs
   box-shadow: 0 8px 22px rgba(37,211,102,0.45);
 }
 @media (min-width: 901px) { .wa-float { bottom: 24px; } }
+
+/* ===== CARD TEXT AREA: soft purple gradient, dark text for easy reading ===== */
+.dt-card-info, .mb-card-info, .skin-info, .make-info {
+  background: linear-gradient(180deg, #FFFFFF 0%, #F0E6FF 38%, #D8C0FA 100%);
+}
+.dt-card-name, .mb-card-name, .skin-name, .make-name { color: #1E0F3C !important; }
+.dt-card-price, .mb-card-price, .skin-price, .make-price { color: #2E1065 !important; }
+.skin-desc, .make-desc { color: rgba(30,15,60,0.72) !important; }
+.dt-card-rating .rating-count { color: rgba(30,15,60,0.6); }
+.dt-card-info, .mb-card-info { border-top: 1px solid rgba(91,33,182,0.10); }
+
+/* ===== "See it on skin" panel: neutral tiles, accent-coloured tabs ===== */
+.mb-skin-tile, .ba-layer { background: #fff !important; }
+.mb-texture-tile, .ba-after { background: #F6F4F8 !important; }
+.mb-gallery-tab {
+  background: color-mix(in srgb, var(--accent, #999) 10%, #fff);
+  border: 2px solid color-mix(in srgb, var(--accent, #999) 55%, transparent);
+  color: color-mix(in srgb, var(--accent, #333) 80%, #000);
+}
+.mb-gallery-tab:hover { border-color: var(--accent, #999); }
+.mb-gallery-tab.active {
+  background: var(--accent, var(--home-primary));
+  border-color: var(--accent, var(--home-primary));
+  color: #fff;
+}
+.mb-facepanel-main, .dt-facepanel-main { border: 2px solid color-mix(in srgb, var(--accent, #d9d9d9) 55%, transparent); }
+
+/* ===== ADMIN: bestseller switch ===== */
+.adm-toggle {
+  width: 44px; height: 24px; border-radius: 100px; border: 0; padding: 0; cursor: pointer;
+  background: rgba(255,255,255,0.14); position: relative; transition: background 0.2s;
+}
+.adm-toggle span {
+  position: absolute; top: 3px; left: 3px; width: 18px; height: 18px; border-radius: 50%;
+  background: #fff; transition: transform 0.2s;
+}
+.adm-toggle.on { background: var(--adm-primary, #10B981); }
+.adm-toggle.on span { transform: translateX(20px); }

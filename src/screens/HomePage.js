@@ -82,6 +82,7 @@ function SkinPanel({ product, galleryTab, setGalleryTab, onInteract, onSwipeProd
   return (
     <div
       className={isMobile ? "mb-facepanel" : "dt-facepanel"}
+      style={{ "--accent": product.accent }}
       onTouchStart={onTouchStart}
       onTouchEnd={onTouchEnd}
     >
@@ -419,27 +420,11 @@ function MobileBestsellers({ addToCart, toggleFavourite, isFav, openProduct, bes
    PAGE
    ============================================================ */
 function HomePage({ setPage, goToProducts, addToCart, toggleFavourite, isFav, openProduct, products }) {
-  // Bestsellers for the homepage carousels — two layers, so this is never
-  // purely manual (which would sit empty on a fresh catalog until someone
-  // remembers to tag something) and never purely automatic (which would
-  // show nothing meaningful before any real sales exist, or worse, look
-  // arbitrary once they do):
-  //   1. Anything an admin has explicitly tagged "bestseller" in the
-  //      admin panel — this is the real backend control, and always
-  //      takes priority.
-  //   2. If that doesn't fill 12 slots, backfill with the top-selling
-  //      remaining products by REAL purchase count (never a fabricated
-  //      number) — but only ones with at least one actual purchase, so
-  //      a brand-new product never gets called a "bestseller" it hasn't
-  //      earned yet.
-  // If neither layer has anything, the section just doesn't render —
-  // see bestsellerProducts.length below.
-  const manuallyTagged = (products || []).filter(p => p.badge === "bestseller");
-  const autoFilled = (products || [])
-    .filter(p => p.badge !== "bestseller" && (p.purchases || 0) > 0)
-    .sort((a, b) => (b.purchases || 0) - (a.purchases || 0))
-    .slice(0, Math.max(0, 12 - manuallyTagged.length));
-  const bestsellerProducts = [...manuallyTagged, ...autoFilled].slice(0, 12);
+  // Bestsellers are manual only: exactly the products the admin has marked
+  // as a bestseller (badge = "bestseller") in the admin panel, capped at 12
+  // for the carousel. Nothing is added automatically from purchase counts.
+  // If none are chosen the whole section is hidden (see the length check below).
+  const bestsellerProducts = (products || []).filter(p => p.badge === "bestseller").slice(0, 12);
   // Real numbers straight from the database (no hardcoded claims).
   const productCount = (products || []).length;
   const brandCount = new Set((products || []).map(p => (p.brand || "").trim().toLowerCase()).filter(Boolean)).size;

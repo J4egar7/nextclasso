@@ -1,5 +1,5 @@
 import { useState, useEffect, Fragment } from "react";
-import { WEIGHT_UNITS, CATEGORIES, BADGES, BG_PRESETS } from "../data/constants.js";
+import { WEIGHT_UNITS, CATEGORIES, BADGES } from "../data/constants.js";
 import { supabase } from "../lib/supabase.js";
 
 const blankForm = {
@@ -215,7 +215,6 @@ function AdminPage({ setPage, user, setUser, authChecked }) {
         weight_unit: form.weightUnit,
         images: uploadedUrls,
         emoji: form.emoji.trim(),
-        bg: form.bg,
         badge: form.badge,
         updated_at: new Date().toISOString(),
       };
@@ -248,6 +247,20 @@ function AdminPage({ setPage, user, setUser, authChecked }) {
     });
     setEditId(p.id);
     setView("add");
+  };
+
+  // Bestsellers are chosen by hand. The toggle sets or clears badge =
+  // "bestseller" on the product. Turning it on replaces any other badge the
+  // product had; turning it off leaves the product with no badge.
+  const toggleBestseller = async (p) => {
+    const next = p.badge === "bestseller" ? "" : "bestseller";
+    setProducts(list => list.map(x => x.id === p.id ? { ...x, badge: next } : x));
+    const { error: e } = await supabase.from("products").update({ badge: next, updated_at: new Date().toISOString() }).eq("id", p.id);
+    if (e) {
+      console.error(e);
+      setProducts(list => list.map(x => x.id === p.id ? { ...x, badge: p.badge } : x));
+      setError("Could not update bestseller: " + e.message);
+    }
   };
 
   const handleDelete = async (p) => {
@@ -770,7 +783,7 @@ function AdminPage({ setPage, user, setUser, authChecked }) {
               <div className="adm-form-card">
                 <div className="adm-form-title"><span>🎨</span> Display</div>
                 <div style={{fontSize:"12px",color:"var(--adm-muted)",marginBottom:"14px"}}>
-                  Until real product photography is added, cards show an emoji on a coloured background instead.
+                  Until real product photography is added, cards show this emoji on a white background instead.
                 </div>
                 <div className="adm-form-grid">
                   <div className="adm-field">
@@ -782,24 +795,6 @@ function AdminPage({ setPage, user, setUser, authChecked }) {
                     <select className="adm-select" value={form.badge} onChange={e=>setField("badge",e.target.value)}>
                       {BADGES.map(b=><option key={b} value={b}>{b || "None"}</option>)}
                     </select>
-                  </div>
-                  <div className="adm-field span-2">
-                    <label className="adm-field-label">Card Background</label>
-                    <div style={{display:"flex",gap:"8px",flexWrap:"wrap"}}>
-                      {BG_PRESETS.map(preset => (
-                        <div
-                          key={preset.value}
-                          onClick={()=>setField("bg",preset.value)}
-                          title={preset.label}
-                          style={{
-                            width:"36px", height:"36px", borderRadius:"10px", cursor:"pointer",
-                            background:preset.value,
-                            border: form.bg===preset.value ? "3px solid var(--adm-accent, #E05C14)" : "2px solid transparent",
-                            boxSizing:"border-box",
-                          }}
-                        />
-                      ))}
-                    </div>
                   </div>
                 </div>
               </div>
@@ -858,7 +853,7 @@ function AdminPage({ setPage, user, setUser, authChecked }) {
                 ) : (
                   <table className="adm-table">
                     <thead><tr>
-                      <th>Product</th><th>Category</th><th>Price</th><th>Cost</th><th>Profit / unit</th><th>Stock</th><th>Weight</th><th>Actions</th>
+                      <th>Product</th><th>Category</th><th>Price</th><th>Cost</th><th>Profit / unit</th><th>Stock</th><th>Weight</th><th>Bestseller</th><th>Actions</th>
                     </tr></thead>
                     <tbody>{products.map(p => (
                       <tr key={p.id}>
@@ -879,6 +874,14 @@ function AdminPage({ setPage, user, setUser, authChecked }) {
                         <td style={{fontSize:"13px",fontWeight:600,color: p.manufacturing_cost > 0 ? "var(--adm-primary)" : "var(--adm-muted)"}}>{p.manufacturing_cost > 0 ? fmtPKR(parsePrice(p.price) - p.manufacturing_cost) : "—"}</td>
                         <td><span className={`adm-stock-badge ${stockBadge(p.stock)}`}>{stockLabel(p.stock)}</span></td>
                         <td style={{color:"var(--adm-muted)",fontSize:"13px"}}>{p.weight ? `${p.weight} ${p.weightUnit}` : "—"}</td>
+                        <td>
+                          <button
+                            type="button" role="switch" aria-checked={p.badge === "bestseller"}
+                            aria-label={`Bestseller: ${p.name}`}
+                            className={`adm-toggle ${p.badge === "bestseller" ? "on" : ""}`}
+                            onClick={()=>toggleBestseller(p)}
+                          ><span /></button>
+                        </td>
                         <td>
                           <div style={{display:"flex",gap:"8px"}}>
                             <button className="adm-btn-secondary" style={{padding:"7px 14px",fontSize:"12px"}} onClick={()=>handleEdit(p)}>✏️ Edit</button>

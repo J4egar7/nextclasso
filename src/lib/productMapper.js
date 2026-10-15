@@ -6,44 +6,34 @@
 export const PUBLIC_COLUMNS =
   "id, name, brand, category, price, price_num, old_price, stock, description, weight, weight_unit, images, emoji, bg, badge, rating, reviews, purchases, views";
 
-// Every product gets a colour theme: a card background plus an accent used
-// for its outline, glow, badge and add button. If the admin picked a
-// background preset, that preset's accent is used. Otherwise a theme is
-// chosen from the product's id, so the same product is always the same
-// colour and neighbouring products differ.
-const PALETTE = [
-  { accent: "#FF5E8A", bg: "linear-gradient(135deg,#FFD6E7,#FF9EBF)" }, // pink
-  { accent: "#10B981", bg: "linear-gradient(135deg,#D4F5E9,#7DDDB5)" }, // mint
-  { accent: "#FF8A4C", bg: "linear-gradient(135deg,#FFE0CC,#FFA66E)" }, // peach
-  { accent: "#8B5CF6", bg: "linear-gradient(135deg,#E8D5F5,#B794F6)" }, // lilac
-  { accent: "#0EA5E9", bg: "linear-gradient(135deg,#E0F2FE,#7DD3FC)" }, // sky
-  { accent: "#F5B700", bg: "linear-gradient(135deg,#FFF8CC,#FFE066)" }, // butter
-  { accent: "#E11D74", bg: "linear-gradient(135deg,#F8C8D4,#F4799B)" }, // rose
-  { accent: "#FF5E5B", bg: "linear-gradient(135deg,#FFE1DE,#FF9C97)" }, // coral
-];
+// Card photos always sit on a neutral white background. Colour comes from a
+// per-product accent instead: a vivid outline and "+" button. The accent is
+// derived from the product id, so it looks random across the catalogue but is
+// always the same colour for the same product (no flicker between visits).
+export const CARD_BG = "#FFFFFF";
 
-// The admin's BG_PRESETS (src/data/constants.js) mapped to an accent colour.
-const PRESET_ACCENTS = {
-  "linear-gradient(135deg,#FFD6E7,#FFACC7)": "#FF5E8A", // Pink
-  "linear-gradient(135deg,#D4F5E9,#A8E6CF)": "#10B981", // Mint
-  "linear-gradient(135deg,#FFE0CC,#FFAB73)": "#FF8A4C", // Peach
-  "linear-gradient(135deg,#E8D5F5,#C9A8F0)": "#8B5CF6", // Lilac
-  "linear-gradient(135deg,#E0F2FE,#BAE6FD)": "#0EA5E9", // Sky
-  "linear-gradient(135deg,#FFFDE7,#FFF59D)": "#F5B700", // Butter
-  "linear-gradient(135deg,#F3E5D8,#E8D5C4)": "#B8825A", // Sand
-  "linear-gradient(135deg,#F8C8D4,#F4A0B5)": "#E11D74", // Rose
-  "linear-gradient(135deg,#E8EAF6,#C5CAE9)": "#6366F1", // Slate
-  "linear-gradient(135deg,#212121,#424242)": "#6B7280", // Ink
-};
+const ACCENTS = [
+  "#E11D74", // raspberry
+  "#0891B2", // teal
+  "#16A34A", // green
+  "#EA580C", // orange
+  "#2563EB", // blue
+  "#DC2626", // red
+  "#0D9488", // emerald
+  "#C026D3", // fuchsia
+  "#D97706", // amber
+  "#4F46E5", // indigo
+  "#DB2777", // pink
+  "#0284C7", // sky
+];
 
 export function colourThemeFor(row) {
   const key = String(row.id ?? row.name ?? "");
-  let h = 0;
-  for (let i = 0; i < key.length; i++) h = (h * 31 + key.charCodeAt(i)) >>> 0;
-  const fallback = PALETTE[h % PALETTE.length];
-  const bg = (row.bg || "").trim();
-  if (!bg) return fallback;
-  return { bg, accent: PRESET_ACCENTS[bg] || fallback.accent };
+  // FNV-1a then a final mix, so consecutive ids do not get consecutive colours.
+  let h = 2166136261;
+  for (let i = 0; i < key.length; i++) { h ^= key.charCodeAt(i); h = Math.imul(h, 16777619); }
+  h ^= h >>> 15; h = Math.imul(h, 2246822519); h ^= h >>> 13;
+  return { bg: CARD_BG, accent: ACCENTS[(h >>> 0) % ACCENTS.length] };
 }
 
 const digitsToInt = (s) => parseInt(String(s ?? "").replace(/[^0-9]/g, ""), 10) || 0;
