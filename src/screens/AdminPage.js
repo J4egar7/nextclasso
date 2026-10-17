@@ -75,13 +75,30 @@ function AdminPage({ setPage, user, setUser, authChecked }) {
 
   // Live-sync the product catalogue from Supabase — this is the single
   // source of truth the storefront also reads from. Admin queries can
-  // select every column (including manufacturing_cost); the public
-  // storefront query in StoreContext.js deliberately doesn't.
+  // Select every column except manufacturing_cost (that column is no
+  // longer readable by the "authenticated" role at all, admin included,
+  // see supabase-security-patch.sql), then fetch costs separately through
+  // admin_product_costs(), a function that only returns rows when
+  // is_admin() is true. Merged back in below so the rest of the admin UI
+  // (the products table, the profit calc) doesn't need to change.
+  const ADMIN_PRODUCT_COLUMNS =
+    "id, name, brand, category, price, price_num, old_price, stock, description, " +
+    "weight, weight_unit, images, emoji, bg, badge, rating, reviews, purchases, views, created_at, updated_at";
+
   useEffect(() => {
     const load = () => {
-      supabase.from("products").select("*").order("created_at", { ascending: false }).then(({ data, error }) => {
+      Promise.all([
+        supabase.from("products").select(ADMIN_PRODUCT_COLUMNS).order("created_at", { ascending: false }),
+        supabase.rpc("admin_product_costs"),
+      ]).then(([{ data, error }, { data: costs, error: costError }]) => {
         if (error) { console.error(error); setLoadingProducts(false); return; }
-        setProducts((data || []).map(mapRowToProduct));
+        if (costError) console.error(costError); // non-fatal: products still load, costs show as unknown
+        const costById = new Map((costs || []).map(c => [c.id, c.manufacturing_cost]));
+        setProducts((data || []).map(row => {
+          const p = mapRowToProduct(row);
+          p.manufacturing_cost = costById.has(row.id) ? costById.get(row.id) : null;
+          return p;
+        }));
         setLoadingProducts(false);
       });
     };

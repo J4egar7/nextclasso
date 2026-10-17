@@ -27,7 +27,7 @@ function StarRating({ value = 5, size = 16, color = "#C9A96E" }) {
   );
 }
 
-function ProductDetailPage({ product: p, setPage, addToCart, toggleFavourite, isFav, prevPage: fromPage, openProduct, products }) {
+function ProductDetailPage({ product: p, setPage, addToCart, toggleFavourite, isFav, prevPage: fromPage, openProduct, products, nonce }) {
   const [qty, setQty] = useState(1);
   const [activeThumb, setActiveThumb] = useState(0);
   const [reviews, setReviews] = useState([]);
@@ -122,6 +122,7 @@ function ProductDetailPage({ product: p, setPage, addToCart, toggleFavourite, is
     <div className="pdp-page">
       <script
         type="application/ld+json"
+        nonce={nonce}
         dangerouslySetInnerHTML={{
           __html: JSON.stringify({
             "@context": "https://schema.org",
