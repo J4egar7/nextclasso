@@ -9,29 +9,25 @@ import { NextResponse } from "next/server";
 // connection. This header tells the browser to refuse all of that by
 // default and only allow an explicit list of sources.
 //
-// script-src: 'self' plus two fixed allowances.
-//   - 'sha256-...' are the exact content hashes of the two static JSON-LD
-//     <script> tags in app/layout.js (site/organisation structured data for
-//     search engines). Their content never changes at runtime, so a hash is
-//     safer than 'unsafe-inline': it allow-lists these two exact scripts and
-//     nothing else, and it does not require per-request dynamic rendering.
-//   - 'nonce-<random>' is a fresh, unguessable value generated on every
-//     request, attached to the one JSON-LD script that genuinely does
-//     change per request (the per-product structured data in
-//     ProductDetailPage.js). It's threaded through as a prop from
-//     app/product/[id]/page.js. No other inline script can use it, since it
-//     changes every request.
-// No other inline script is allowed. A bug that injects
-// <script>...</script> anywhere else on the page will not execute.
-const STATIC_SCRIPT_HASHES = [
-  "'sha256-/avjt6Bg0f8s2q6K1xP7Thig1pmFzp7ulga65hPV30M='", // app/layout.js org schema
-  "'sha256-GNG5zX7i3Pvk6XffkPVTL8gpbwJlBqC4sEy7PDbUfXg='", // app/layout.js site schema
-];
-
-function buildCsp(nonce) {
+// script-src: 'self' (no script can ever load from a third-party domain,
+// which is the actual threat a compromised dependency or an injected
+// <script src=...> depends on) plus 'unsafe-inline'.
+//
+// An earlier version tried to lock inline scripts down further with a
+// per-request nonce, but Next.js only attaches that nonce to its own
+// framework scripts on routes that call headers() during render, which
+// was only app/product/[id]/page.js. Every other page's CSP still
+// demanded a nonce Next's own scripts never carried there, so the
+// browser silently refused to run them: no hydration, no onClick
+// handlers, anywhere but that one page. 'unsafe-inline' trades away
+// strict inline-script allow-listing for actually working correctly
+// everywhere; this app never renders raw user input as HTML (reviews
+// are plain React text, not dangerouslySetInnerHTML with user
+// content), so that trade is a reasonable one here.
+function buildCsp() {
   return [
     `default-src 'self'`,
-    `script-src 'self' 'nonce-${nonce}' ${STATIC_SCRIPT_HASHES.join(" ")}`,
+    `script-src 'self' 'unsafe-inline'`,
     // Inline `style={{...}}` is used throughout the UI (accent colours,
     // computed layout). Disallowing it would require rewriting every
     // styled component to use nonced <style> blocks instead, so this is a
@@ -58,24 +54,14 @@ function buildCsp(nonce) {
 }
 
 export function middleware(request) {
-  // Edge runtime has Web Crypto's randomUUID(); base64-encoding it gives a
-  // CSP-safe nonce value.
-  const nonce = Buffer.from(crypto.randomUUID()).toString("base64");
-
-  const requestHeaders = new Headers(request.headers);
-  requestHeaders.set("x-csp-nonce", nonce);
-
-  const response = NextResponse.next({ request: { headers: requestHeaders } });
-  response.headers.set("Content-Security-Policy", buildCsp(nonce));
+  const response = NextResponse.next();
+  response.headers.set("Content-Security-Policy", buildCsp());
   return response;
 }
 
-// Runs for every page request (not for static assets), so the CSP header
-// and nonce are always present. Middleware adding a response header does
-// not force any route into dynamic rendering by itself — app/layout.js
-// keeps its existing 60-second ISR; only app/product/[id]/page.js reads
-// the nonce (see that file), which is the one route that already does a
-// live per-request Supabase read for its metadata anyway.
+// Runs for every page request (not for static assets). No dynamic APIs
+// are used here, so this doesn't force any route into dynamic
+// rendering — every page keeps whatever static/ISR behaviour it had.
 export const config = {
   matcher: ["/((?!_next/static|_next/image|favicon.ico).*)"],
 };

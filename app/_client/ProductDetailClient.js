@@ -6,7 +6,7 @@ import ProductDetailPage from "../../src/screens/ProductDetailPage.js";
 import { useStore } from "../../src/lib/StoreContext.js";
 import { pageToPath } from "../../src/lib/routes.js";
 
-export default function ProductDetailClient({ nonce }) {
+export default function ProductDetailClient() {
   const router = useRouter();
   const params = useParams();
   const searchParams = useSearchParams();
@@ -46,7 +46,6 @@ export default function ProductDetailClient({ nonce }) {
       recentOrders={recentOrders}
       products={products}
       openProduct={(p) => router.push(`/product/${p.id}?from=${p._prevPage || prevPage}`)}
-      nonce={nonce}
     />
   );
 }

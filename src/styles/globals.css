@@ -5004,3 +5004,33 @@ input:focus-visible, textarea:focus-visible, select:focus-visible { outline-offs
 }
 .adm-toggle.on { background: var(--adm-primary, #10B981); }
 .adm-toggle.on span { transform: translateX(20px); }
+
+/* ===== BESTSELLERS: outline only, no other colour ===== */
+/* Scoped to the bestseller carousel specifically (.dt-bestsellers on
+   desktop, .mobile-bestsellers on mobile) — Skincare/Makeup cards keep
+   their full colour treatment, only this section is stripped down. */
+.dt-bestsellers .dt-card,
+.mobile-bestsellers .mb-card {
+  border-width: 3px;
+  box-shadow: none;
+}
+.dt-bestsellers .dt-card:hover,
+.mobile-bestsellers .mb-card:hover {
+  box-shadow: none;
+}
+.dt-bestsellers .dt-card.dt-card-active {
+  box-shadow: none;
+}
+.dt-bestsellers .dt-card-brand,
+.mobile-bestsellers .mb-card-brand {
+  color: #6B7280 !important;
+}
+.dt-bestsellers .dt-card .product-badge,
+.mobile-bestsellers .mb-card .product-badge {
+  background: var(--home-primary) !important;
+}
+.dt-bestsellers .dt-card .add-btn,
+.mobile-bestsellers .mb-card .add-btn {
+  background: var(--home-primary) !important;
+  box-shadow: 0 0 0 3px #fff, 0 6px 14px rgba(0,0,0,0.15);
+}
