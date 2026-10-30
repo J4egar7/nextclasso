@@ -1,4 +1,4 @@
-import { Fragment, useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import NewsletterForm from "../components/NewsletterForm.js";
 import CloudHero from "../components/CloudHero.js";
@@ -426,10 +426,6 @@ function HomePage({ setPage, goToProducts, addToCart, toggleFavourite, isFav, op
   // for the carousel. Nothing is added automatically from purchase counts.
   // If none are chosen the whole section is hidden (see the length check below).
   const bestsellerProducts = (products || []).filter(p => p.badge === "bestseller").slice(0, 12);
-  // Real numbers straight from the database (no hardcoded claims).
-  const productCount = (products || []).length;
-  const brandCount = new Set((products || []).map(p => (p.brand || "").trim().toLowerCase()).filter(Boolean)).size;
-  const plural = (n, one, many) => `${n} ${n === 1 ? one : many}`;
   return (
     <div className="page page-enter">
             {/* SITE OPENING SALE BANNER */}
@@ -457,25 +453,6 @@ function HomePage({ setPage, goToProducts, addToCart, toggleFavourite, isFav, op
           ))}
         </div>
       </div>
-
-      {/* STATS (live from the database) */}
-      {productCount > 0 && (
-        <div className="stats-band">
-          {[
-            { num: String(productCount), label: productCount === 1 ? "Product" : "Products" },
-            { num: String(brandCount),   label: brandCount === 1 ? "Brand" : "Brands" },
-            { num: "COD",                label: "Pay on arrival" },
-          ].map((st, i, arr) => (
-            <Fragment key={st.label}>
-              <div className="stat-item">
-                <div className="stat-num">{st.num}</div>
-                <div className="stat-label">{st.label}</div>
-              </div>
-              {i < arr.length - 1 && <div className="stat-divider" />}
-            </Fragment>
-          ))}
-        </div>
-      )}
 
       {/* BESTSELLERS — desktop carousel + mobile carousel, CSS controls which shows.
           Doesn't render at all if there's nothing real to show yet — see

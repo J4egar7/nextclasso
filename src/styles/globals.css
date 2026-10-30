@@ -5078,31 +5078,15 @@ input:focus-visible, textarea:focus-visible, select:focus-visible { outline-offs
   -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
 }
 
-/* CSS brand bottles (sit IN FRONT of the letters, like the reference).
-   Each bottle's palette/tint arrives as CSS vars set inline from CloudHero.js. */
+/* Hero product bottle: real packshot image, one random brand per page load */
 .cloud-bottle {
   position: absolute; z-index: 2; left: 50%; top: 47%;
-  width: calc(clamp(66px, 8.5vw, 120px) * var(--bw, 1)); aspect-ratio: 1 / 3.15;
-  transform: translate(-50%, -50%) rotate(var(--br, 0deg));
-  animation: bottleFloat 7s ease-in-out infinite;
-  animation-delay: var(--bd, 0s);
-  filter: drop-shadow(0 26px 34px rgba(88,52,110,0.4));
+  width: clamp(150px, 17vw, 230px);
+  transform: translate(-50%, -50%) rotate(6deg);
+  animation: bottleFloat 6.5s ease-in-out infinite;
+  filter: drop-shadow(0 30px 40px rgba(88,52,110,0.45));
 }
-.cb-cap  { height: 20%; width: 74%; margin: 0 auto; border-radius: 8px 8px 3px 3px;
-  background: var(--cb-cap, linear-gradient(90deg,#b9776f,#f4c3b7 32%,#fff0e8 50%,#d99a8f 72%,#9b5a58)); }
-.cb-neck { height: 4%; width: 60%; margin: 0 auto; background: var(--cb-cap, linear-gradient(90deg,#8e5655,#e8b4a8,#8e5655));
-  filter: brightness(0.85); }
-.cb-body { position: relative; height: 76%; border-radius: 14px 14px 10px 10px; overflow: hidden;
-  background: var(--cb-body, linear-gradient(90deg,#b36f6c 0%,#f2c1b5 26%,#fff2eb 46%,#e3a396 68%,#a15c5b 100%)); }
-.cb-shine { position: absolute; top: 0; bottom: 0; left: 18%; width: 10%;
-  background: linear-gradient(180deg,rgba(255,255,255,0.8),rgba(255,255,255,0.05)); filter: blur(3px); }
-.cb-label { position: absolute; left: 50%; top: 40%; transform: translateX(-50%); width: 76%;
-  display: flex; flex-direction: column; align-items: center; color: var(--cb-ink, rgba(90,45,48,0.85));
-  font-family: var(--font-bebas), sans-serif; line-height: 1; }
-.cb-label b { font-size: calc(clamp(20px, 2.6vw, 36px) * var(--bw, 1)); font-weight: 400; }
-.cb-label span { font-size: calc(clamp(8px, 1vw, 13px) * var(--bw, 1)); letter-spacing: 2px; margin-top: 4px; }
-.cb-label small { font-family: var(--font-dmsans), sans-serif; font-size: calc(clamp(5px, 0.55vw, 7px) * var(--bw, 1));
-  letter-spacing: 1px; margin-top: 5px; opacity: 0.75; }
+.cloud-bottle img { display: block; width: 100%; height: auto; }
 
 /* Floating trust cards orbiting the headline (15K+ orders, 4.7 rating, ...) */
 .ch-float {
@@ -5116,10 +5100,10 @@ input:focus-visible, textarea:focus-visible, select:focus-visible { outline-offs
   letter-spacing: 1.6px; text-transform: uppercase; color: #8d7a86; margin-top: 2px; }
 .ch-float small { display: block; font-family: var(--font-dmsans), sans-serif; font-size: 10px;
   color: #f5b301; letter-spacing: 2px; margin-top: 3px; }
-.ch-f1 { left: 7%;  top: 18%; }
-.ch-f2 { left: 80%; top: 16%; }
-.ch-f3 { left: 6%;  top: 62%; }
-.ch-f4 { left: 81%; top: 58%; }
+.ch-f1 { left: 15%; top: 22%; }
+.ch-f2 { left: 69%; top: 18%; }
+.ch-f3 { left: 15%; top: 63%; }
+.ch-f4 { left: 69%; top: 58%; }
 
 .cloud-bubble {
   position: absolute; z-index: 1; border-radius: 50%; pointer-events: none;
@@ -5139,10 +5123,7 @@ input:focus-visible, textarea:focus-visible, select:focus-visible { outline-offs
 }
 .cloud-btn-glass:hover { background: rgba(255,255,255,0.32); transform: translateY(-2px); }
 
-@keyframes bottleFloat {
-  0%, 100% { transform: translate(-50%, -50%) rotate(var(--br, 0deg)); }
-  50%      { transform: translate(-50%, calc(-50% - 12px)) rotate(calc(var(--br, 0deg) * 0.5)); }
-}
+@keyframes bottleFloat { 0%,100% { transform: translate(-50%,-50%) rotate(6deg); } 50% { transform: translate(-50%,-54%) rotate(4.5deg); } }
 @keyframes floatCard { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
 @keyframes bubbleFloat { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-16px); } }
 
@@ -5198,7 +5179,7 @@ input:focus-visible, textarea:focus-visible, select:focus-visible { outline-offs
 
 @media (max-width: 860px) {
   .cloud-hero { min-height: 92vh; padding: 80px 5vw 250px; }
-  .cloud-bottle { width: calc(clamp(44px, 9vw, 74px) * var(--bw, 1)); }
+  .cloud-bottle { width: clamp(112px, 22vw, 158px); }
   .cloud-hero-foot { left: 5vw; right: 5vw; bottom: 96px; max-width: none; text-align: center; }
   .cloud-hero-btns { justify-content: center; }
   .ch-float { padding: 7px 10px; }
