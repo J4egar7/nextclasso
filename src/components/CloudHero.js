@@ -7,14 +7,15 @@ import { useEffect, useState } from "react";
 const CLOUD_BG =
   "https://images.unsplash.com/photo-1534271057238-c2c170a76672?auto=format&fit=crop&w=2200&q=80";
 
-// One of these is chosen at random on every page load. Images are transparent
-// packshot PNGs downloaded from official-brand sources (see /public/bottles).
+// One of these is chosen at random on every page load. Each packshot is
+// trimmed to its content bounds (see /public/bottles),
+// so every bottle renders at the same height regardless of source resolution.
 const BOTTLE_POOL = [
-  { id: "cerave",   name: "CeraVe Moisturising Cream",      src: "/bottles/cerave.png" },
-  { id: "ordinary", name: "The Ordinary Multi-Peptide Serum", src: "/bottles/the-ordinary.png" },
-  { id: "inkey",    name: "The Inkey List Hyaluronic Serum",  src: "/bottles/the-inkey-list.png" },
-  { id: "cosrx",    name: "COSRX Snail 96 Mucin Essence",     src: "/bottles/cosrx.png" },
-  { id: "boj",      name: "Beauty of Joseon Glow Serum",      src: "/bottles/beauty-of-joseon.png" },
+  { id: "cerave",     name: "CeraVe Daily Moisturizing Lotion",        src: "/bottles/cerave.png" },
+  { id: "ordinary",   name: "The Ordinary Niacinamide 10% + Zinc 1%",  src: "/bottles/the-ordinary.png" },
+  { id: "boj",        name: "Beauty of Joseon Glow Deep Serum",        src: "/bottles/beauty-of-joseon.png" },
+  { id: "lrp",        name: "La Roche-Posay Toleriane Double Repair UV", src: "/bottles/la-roche-posay.png" },
+  { id: "neutrogena", name: "Neutrogena Hydro Boost Water Gel Cleanser", src: "/bottles/neutrogena.png" },
 ];
 
 // Floating trust cards that hug the headline.

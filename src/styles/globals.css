@@ -5073,7 +5073,7 @@ input:focus-visible, textarea:focus-visible, select:focus-visible { outline-offs
      descenders of "glowing" fell outside it and were cut off flat. The
      negative margin cancels the extra height, keeping line spacing as it was. */
   padding-bottom: 0.18em; margin-bottom: -0.18em;
-  background: linear-gradient(180deg, #8d3161 0%, #48112f 92%);
+  background: linear-gradient(180deg, #ffe873 0%, #ffc107 90%);
   -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
 }
 .ch-ritual {
