@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html><head><meta charset="utf-8"><title>probe</title></head><body style="margin:0">
+<script>
+window.composite = async function (src, color) {
+  const img = new Image();
+  await new Promise((res, rej) => { img.onload = res; img.onerror = rej; img.src = src; });
+  const c = document.createElement("canvas");
+  c.width = 280; c.height = 300;
+  const ctx = c.getContext("2d");
+  ctx.fillStyle = color;
+  ctx.fillRect(0, 0, c.width, c.height);
+  ctx.drawImage(img, 0, 0, 260, 260);
+  return c.toDataURL("image/png");
+};
+</script>
+</body></html>

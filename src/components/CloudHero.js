@@ -65,7 +65,7 @@ export default function CloudHero({ goToProducts }) {
 
       {bottle && (
         <div className="cloud-bottle" aria-hidden="true">
-          <img src={bottle.src} alt="" width={340} height={340} />
+          <img src={bottle.src} alt="" />
         </div>
       )}
 

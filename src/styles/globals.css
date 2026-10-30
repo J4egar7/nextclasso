@@ -5069,7 +5069,11 @@ input:focus-visible, textarea:focus-visible, select:focus-visible { outline-offs
 .ch-skin  { font-size: clamp(56px, 11vw, 150px); }
 .ch-glowing {
   font-size: clamp(56px, 11vw, 150px); font-style: italic; font-weight: 700;
-  background: linear-gradient(180deg, #ffb3c2 0%, #f6596c 90%);
+  /* A clipped background only paints inside the padding box, so both
+     descenders of "glowing" fell outside it and were cut off flat. The
+     negative margin cancels the extra height, keeping line spacing as it was. */
+  padding-bottom: 0.18em; margin-bottom: -0.18em;
+  background: linear-gradient(180deg, #8d3161 0%, #48112f 92%);
   -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
 }
 .ch-ritual {
@@ -5080,13 +5084,25 @@ input:focus-visible, textarea:focus-visible, select:focus-visible { outline-offs
 
 /* Hero product bottle: real packshot image, one random brand per page load */
 .cloud-bottle {
-  position: absolute; z-index: 2; left: 50%; top: 47%;
-  width: clamp(150px, 17vw, 230px);
+  position: absolute; z-index: 2; left: 50%; top: 50%;
+  display: flex;
   transform: translate(-50%, -50%) rotate(6deg);
   animation: bottleFloat 6.5s ease-in-out infinite;
-  filter: drop-shadow(0 30px 40px rgba(88,52,110,0.45));
+  filter: drop-shadow(0 22px 34px rgba(72,20,52,0.42)) drop-shadow(0 3px 8px rgba(72,20,52,0.3));
 }
-.cloud-bottle img { display: block; width: 100%; height: auto; }
+/* Soft light plate behind the packshot. These are studio shots of white and
+   cream product cut out of a white background, so against pink clouds the pale
+   bodies and glass edges had nothing to separate them and read as see-through. */
+.cloud-bottle::before {
+  content: ""; position: absolute; z-index: -1; inset: -16% -34%;
+  border-radius: 50%;
+  background: radial-gradient(ellipse at 50% 52%,
+    rgba(255,253,249,0.95) 0%, rgba(255,249,242,0.72) 42%, rgba(255,249,242,0) 70%);
+  filter: blur(4px);
+}
+/* The packshots are trimmed to their content, so height is the real bottle
+   height and every brand renders at the same size. */
+.cloud-bottle img { display: block; height: clamp(200px, 34vh, 320px); width: auto; max-width: none; }
 
 /* Floating trust cards orbiting the headline (15K+ orders, 4.7 rating, ...) */
 .ch-float {
@@ -5100,10 +5116,12 @@ input:focus-visible, textarea:focus-visible, select:focus-visible { outline-offs
   letter-spacing: 1.6px; text-transform: uppercase; color: #8d7a86; margin-top: 2px; }
 .ch-float small { display: block; font-family: var(--font-dmsans), sans-serif; font-size: 10px;
   color: #f5b301; letter-spacing: 2px; margin-top: 3px; }
-.ch-f1 { left: 15%; top: 22%; }
-.ch-f2 { left: 69%; top: 18%; }
-.ch-f3 { left: 15%; top: 63%; }
-.ch-f4 { left: 69%; top: 58%; }
+/* Positions drawn on the mockup: pulled in from the edges so the cards hug
+   the headline instead of framing the whole hero. */
+.ch-f1 { left: 25%; top: 20%; }
+.ch-f2 { left: 61%; top: 38%; }
+.ch-f3 { left: 28%; top: 54%; }
+.ch-f4 { left: 54%; top: 77%; }
 
 .cloud-bubble {
   position: absolute; z-index: 1; border-radius: 50%; pointer-events: none;
@@ -5179,7 +5197,7 @@ input:focus-visible, textarea:focus-visible, select:focus-visible { outline-offs
 
 @media (max-width: 860px) {
   .cloud-hero { min-height: 92vh; padding: 80px 5vw 250px; }
-  .cloud-bottle { width: clamp(112px, 22vw, 158px); }
+  .cloud-bottle img { height: clamp(150px, 34vw, 210px); }
   .cloud-hero-foot { left: 5vw; right: 5vw; bottom: 96px; max-width: none; text-align: center; }
   .cloud-hero-btns { justify-content: center; }
   .ch-float { padding: 7px 10px; }
