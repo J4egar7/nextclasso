@@ -1,6 +1,8 @@
 import { Fragment, useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import NewsletterForm from "../components/NewsletterForm.js";
+import CloudHero from "../components/CloudHero.js";
+import ClosingFeature from "../components/ClosingFeature.js";
 
 /* ============================================================
    SHARED: Before/After comparison slider
@@ -444,54 +446,7 @@ function HomePage({ setPage, goToProducts, addToCart, toggleFavourite, isFav, op
       </div>
 
       {/* HERO */}
-      <section className="home-hero" style={{
-        backgroundImage: "url('/hero-bg.jpg')",
-        backgroundSize: "cover",
-        backgroundPosition: "center right",
-        backgroundRepeat: "no-repeat",
-      }}>
-        <div className="hero-wash" />
-        <div className="hero-spotlight" />
-        <div className="hero-blob-3" style={{opacity:0.4}} />
-        <div className="hero-content">
-          <div className="hero-tag">New Arrivals ✦ Spring 2026</div>
-          <h1 className="hero-title">
-            Your skin,<br />
-            <span className="accent">glowing</span><br />
-            <span className="accent2">ritual</span>
-          </h1>
-          <p className="hero-sub">Curated beauty from the world's most coveted brands. Delivered to your doorstep with love.</p>
-          <div className="hero-btns">
-            <button className="btn-primary" onClick={() => goToProducts("skincare")}>Shop Skincare</button>
-            <button className="btn-outline" onClick={() => goToProducts("makeup")}>Explore Makeup</button>
-          </div>
-        </div>
-        <div className="hero-card-anchor" style={{ left: "60%", top: "23.5%" }}>
-          <div className="hero-card-sm c3">
-            <div style={{fontSize:"11px",fontWeight:700,letterSpacing:"1px",textTransform:"uppercase",color:"rgba(0,0,0,0.35)",marginBottom:"4px"}}>Launch Offer</div>
-            <div className="num" style={{fontSize:"22px"}}>50% OFF</div>
-            <div style={{fontSize:"11px",color:"rgba(0,0,0,0.4)",fontWeight:500}}>This month only 🎉</div>
-          </div>
-        </div>
-        {productCount > 0 && (
-          <div className="hero-card-anchor" style={{ left: "90.3%", top: "19.7%" }}>
-            <div className="hero-card-sm c2">
-              <div className="num">{productCount}</div>
-              <div style={{fontSize:'11px',color:'rgba(0,0,0,0.4)',fontWeight:600,letterSpacing:'1px',textTransform:'uppercase',marginTop:'2px'}}>{productCount === 1 ? "Product" : "Products"}</div>
-              <div className="hero-stars">✓ Authentic</div>
-            </div>
-          </div>
-        )}
-        {brandCount > 0 && (
-          <div className="hero-card-anchor" style={{ left: "67.5%", top: "65.5%" }}>
-            <div className="hero-card-sm c1">
-              <div className="num">{brandCount}</div>
-              <div style={{fontSize:'11px',color:'rgba(0,0,0,0.4)',fontWeight:600,letterSpacing:'1px',textTransform:'uppercase',marginTop:'2px'}}>{brandCount === 1 ? "Brand" : "Brands"}</div>
-              <div className="hero-stars">✓ Curated</div>
-            </div>
-          </div>
-        )}
-      </section>
+      <CloudHero productCount={productCount} brandCount={brandCount} goToProducts={goToProducts} />
 
       {/* MARQUEE */}
       <div className="marquee-wrap">
@@ -617,6 +572,9 @@ function HomePage({ setPage, goToProducts, addToCart, toggleFavourite, isFav, op
         <p className="newsletter-sub">Get early access to launches & sales</p>
         <NewsletterForm />
       </section>
+
+      {/* CLOSING FEATURE */}
+      <ClosingFeature setPage={setPage} goToProducts={goToProducts} />
     </div>
   );
 }

@@ -93,8 +93,6 @@ function ProductDetailPage({ product: p, setPage, addToCart, toggleFavourite, is
   const shadowColor  = isMakeup ? "rgba(233,30,140,0.3)" : "rgba(201,116,143,0.3)";
 
   const priceNum = parseInt((p.price||"").replace(/[^0-9]/g,""))||0;
-  const oldNum = p.old ? parseInt((p.old||"").replace(/[^0-9]/g,"")) : 0;
-  const pctOff = oldNum && priceNum ? Math.round(100 - (priceNum/oldNum)*100) : 0;
 
   const thumbSlots = (p.images && p.images.length > 0)
     ? p.images.map(url => ({ image: url, bg: p.bg || "linear-gradient(135deg,#F5EDD8,#EDD9B4)" }))
@@ -211,8 +209,6 @@ function ProductDetailPage({ product: p, setPage, addToCart, toggleFavourite, is
 
           <div style={{ marginBottom:"4px", display:"flex", alignItems:"center", gap:"10px", flexWrap:"wrap" }}>
             <span className="pdp-price" style={{ color:primaryColor }}>{p.price}</span>
-            {p.old && <span className="pdp-price-old">{p.old}</span>}
-            {pctOff > 0 && <span className="pdp-save-badge">Save {pctOff}%</span>}
           </div>
           <div className="pdp-delivery-note">
             🚚 {priceNum*qty >= 5000 ? "Free delivery included" : `Add ${fmt(5000-priceNum*qty)} more for free delivery`}

@@ -3,9 +3,17 @@ import { WEIGHT_UNITS, CATEGORIES, BADGES } from "../data/constants.js";
 import { supabase } from "../lib/supabase.js";
 
 const blankForm = {
-  name:"", brand:"", category:"Cleansers", price:"", oldPrice:"", manufacturingCost:"", stock:"",
+  name:"", brand:"", category:"Cleansers", price:"", manufacturingCost:"", stock:"",
   description:"", weight:"", weightUnit:"g", images:[],
   emoji:"", bg:"", badge:"",
+};
+
+// "PKR 2,800", "2,800" and "2,800.50" all become numbers. It keeps a single
+// decimal point, because stripping to digits only would turn "2,800.50" into
+// 280050 — the dot is deleted and the two halves are glued together.
+const parseAmount = (value) => {
+  const n = parseFloat(String(value ?? "").replace(/[^0-9.]/g, ""));
+  return Number.isFinite(n) ? n : 0;
 };
 
 // DB rows are snake_case; the admin form/table use camelCase — same
@@ -13,7 +21,7 @@ const blankForm = {
 function mapRowToProduct(row) {
   return {
     id: row.id, name: row.name, brand: row.brand, category: row.category,
-    price: row.price, priceNum: row.price_num, old: row.old_price, stock: row.stock,
+    price: row.price, priceNum: row.price_num, stock: row.stock,
     description: row.description, weight: row.weight, weightUnit: row.weight_unit,
     images: row.images || [],
     emoji: row.emoji, bg: row.bg, badge: row.badge,
@@ -82,7 +90,7 @@ function AdminPage({ setPage, user, setUser, authChecked }) {
   // is_admin() is true. Merged back in below so the rest of the admin UI
   // (the products table, the profit calc) doesn't need to change.
   const ADMIN_PRODUCT_COLUMNS =
-    "id, name, brand, category, price, price_num, old_price, stock, description, " +
+    "id, name, brand, category, price, price_num, stock, description, " +
     "weight, weight_unit, images, emoji, bg, badge, rating, reviews, purchases, views, created_at, updated_at";
 
   useEffect(() => {
@@ -93,7 +101,10 @@ function AdminPage({ setPage, user, setUser, authChecked }) {
       ]).then(([{ data, error }, { data: costs, error: costError }]) => {
         if (error) { console.error(error); setLoadingProducts(false); return; }
         if (costError) console.error(costError); // non-fatal: products still load, costs show as unknown
-        const costById = new Map((costs || []).map(c => [c.id, c.manufacturing_cost]));
+        // Coerce here rather than trusting the RPC's JSON type: if the
+        // function ever returns the cost as text, Number.isFinite() further
+        // down would reject it and every product would look cost-less.
+        const costById = new Map((costs || []).map(c => [c.id, c.manufacturing_cost == null ? null : Number(c.manufacturing_cost)]));
         setProducts((data || []).map(row => {
           const p = mapRowToProduct(row);
           p.manufacturing_cost = costById.has(row.id) ? costById.get(row.id) : null;
@@ -214,18 +225,17 @@ function AdminPage({ setPage, user, setUser, authChecked }) {
 
       // Store prices in one consistent format ("PKR 3,200") however they
       // were typed, so every card on the storefront looks the same.
-      const priceNum = parseInt(form.price.replace(/[^0-9]/g, "")) || 0;
-      const oldNum = parseInt(form.oldPrice.replace(/[^0-9]/g, "")) || 0;
+      const priceNum = Math.round(parseAmount(form.price));
+      // A blank cost field now actively clears it (null) instead of silently
+      // leaving the old value behind — otherwise a cost could never be undone.
+      const costField = String(form.manufacturingCost).trim();
       const payload = {
         name: form.name.trim(),
         brand: form.brand.trim(),
         category: form.category,
         price: priceNum > 0 ? `PKR ${priceNum.toLocaleString("en-US")}` : form.price.trim(),
         price_num: priceNum,
-        old_price: oldNum > 0 ? `PKR ${oldNum.toLocaleString("en-US")}` : null,
-        ...(String(form.manufacturingCost).trim() !== ""
-          ? { manufacturing_cost: parseInt(String(form.manufacturingCost).replace(/[^0-9]/g, "")) || 0 }
-          : {}),
+        manufacturing_cost: costField === "" ? null : parseAmount(costField),
         stock: parseInt(form.stock) || 0,
         description: form.description.trim(),
         weight: form.weight,
@@ -258,7 +268,7 @@ function AdminPage({ setPage, user, setUser, authChecked }) {
 
   const handleEdit = (p) => {
     setForm({
-      name:p.name, brand:p.brand, category:p.category, price:p.price, oldPrice:p.old||"", manufacturingCost: p.manufacturing_cost ? String(p.manufacturing_cost) : "",
+      name:p.name, brand:p.brand, category:p.category, price:p.price, manufacturingCost: p.manufacturing_cost != null ? String(p.manufacturing_cost) : "",
       stock:String(p.stock), description:p.description, weight:p.weight||"", weightUnit:p.weightUnit||"g",
       images:p.images || [], emoji:p.emoji||"", bg:p.bg||"", badge:p.badge||"",
     });
@@ -303,7 +313,7 @@ function AdminPage({ setPage, user, setUser, authChecked }) {
   const stockBadge = (n) => n === 0 ? "out" : n < 5 ? "low" : "in";
   const stockLabel = (n) => n === 0 ? "Out of Stock" : n < 5 ? `Low (${n})` : `In Stock (${n})`;
 
-  const parsePrice = (str) => parseInt(String(str || "").replace(/[^0-9]/g, "")) || 0;
+  const parsePrice = (str) => parseAmount(str);
   const fmtPKR = (n) => `PKR ${Math.round(n).toLocaleString()}`;
 
   // Sales    = sale price x quantity for every item in non-cancelled orders
@@ -315,8 +325,10 @@ function AdminPage({ setPage, user, setUser, authChecked }) {
   // dashboard says how many items were left out.
   const costById = Object.fromEntries(products.map(p => [String(p.id), p.manufacturing_cost]));
   const itemKey = (item) => String(item.product_id ?? item.id);
+  // A cost is "usable" only if it is a real number greater than zero. The
+  // Number() conversion covers a cost that arrives as text from the RPC.
   const itemCost = (item) => {
-    const c = costById[itemKey(item)];
+    const c = Number(costById[itemKey(item)]);
     return Number.isFinite(c) && c > 0 ? c : null;
   };
   const orderSales = (o) => (o.items || []).reduce((sum, item) => sum + parsePrice(item.price) * (item.qty || 1), 0);
@@ -335,7 +347,7 @@ function AdminPage({ setPage, user, setUser, authChecked }) {
     return { profit: acc.profit + info.profit, missing: acc.missing + info.missing };
   }, { profit: 0, missing: 0 });
   const totalProfit = profitTotals.profit;
-  const productsMissingCost = products.filter(p => !(Number.isFinite(p.manufacturing_cost) && p.manufacturing_cost > 0)).length;
+  const productsMissingCost = products.filter(p => !(Number.isFinite(Number(p.manufacturing_cost)) && Number(p.manufacturing_cost) > 0)).length;
 
   const STATUS_LABELS = { pending: "Pending", delivered: "Fulfilled", cancelled: "Cancelled" };
   const statusOf = (o) => o.status || "pending";
@@ -361,6 +373,24 @@ function AdminPage({ setPage, user, setUser, authChecked }) {
       console.error(updateError);
       setOrders(list => list.map(x => x.id === o.id ? { ...x, status: previous } : x));
       setError("Could not update the order status: " + updateError.message + ". Run supabase-orders-admin.sql in the Supabase SQL editor if you have not yet.");
+    }
+    setUpdatingOrder(null);
+  };
+
+  const deleteOrder = async (o) => {
+    const label = orderNumber(o);
+    const who = o.customer_name ? ` for ${o.customer_name}` : "";
+    if (!window.confirm(`Delete order ${label}${who}? This can't be undone.`)) return;
+    setError("");
+    setUpdatingOrder(o.id);
+    const snapshot = orders; // put the row straight back if the delete fails
+    setOrders(list => list.filter(x => x.id !== o.id));
+    if (expandedOrder === o.id) setExpandedOrder(null);
+    const { error: deleteError } = await supabase.from("orders").delete().eq("id", o.id);
+    if (deleteError) {
+      console.error(deleteError);
+      setOrders(snapshot);
+      setError("Could not delete the order: " + deleteError.message + ". Run supabase-orders-admin.sql in the Supabase SQL editor if you have not yet.");
     }
     setUpdatingOrder(null);
   };
@@ -477,12 +507,17 @@ function AdminPage({ setPage, user, setUser, authChecked }) {
               {pendingReviews > 0 && (
                 <div className="adm-cost-warning">⭐ {pendingReviews} customer review{pendingReviews === 1 ? " is" : "s are"} waiting for your approval in the Reviews tab.</div>
               )}
-              {(profitTotals.missing > 0 || productsMissingCost > 0) && (
+              {profitTotals.missing > 0 ? (
                 <div className="adm-cost-warning">
-                  ⚠️ Profit leaves out {profitTotals.missing > 0 ? `${profitTotals.missing} sold item${profitTotals.missing === 1 ? "" : "s"}` : "nothing yet"} because {productsMissingCost} product{productsMissingCost === 1 ? " has" : "s have"} no manufacturing cost set.
-                  Open a product, add its manufacturing cost, and profit will include it.
+                  ⚠️ Profit is leaving out {profitTotals.missing} sold item{profitTotals.missing === 1 ? "" : "s"} with no manufacturing cost set.
+                  Open the product, add its cost, and those sales count towards profit.
                 </div>
-              )}
+              ) : productsMissingCost > 0 ? (
+                <div className="adm-cost-warning">
+                  🧮 {productsMissingCost} product{productsMissingCost === 1 ? " has" : "s have"} no manufacturing cost yet, so they are not counted in profit.
+                  Nothing has sold without a cost so far.
+                </div>
+              ) : null}
               <div className="adm-stats-grid">
                 {[
                   { icon:"✅", val: products.filter(p=>p.stock>0).length, label:"In Stock" },
@@ -586,7 +621,7 @@ function AdminPage({ setPage, user, setUser, authChecked }) {
                 ) : (
                   <table className="adm-table">
                     <thead><tr>
-                      <th>Order</th><th>Customer</th><th>Items</th><th>Total</th><th>Status</th><th>Placed</th>
+                      <th>Order</th><th>Customer</th><th>Items</th><th>Total</th><th>Status</th><th>Placed</th><th>Actions</th>
                     </tr></thead>
                     <tbody>{visibleOrders.map(o => (
                       <Fragment key={o.id}>
@@ -614,10 +649,18 @@ function AdminPage({ setPage, user, setUser, authChecked }) {
                             </select>
                           </td>
                           <td style={{color:"var(--adm-muted)",fontSize:"13px"}}>{o.placed_at ? new Date(o.placed_at).toLocaleString() : "—"}</td>
+                          <td onClick={e => e.stopPropagation()}>
+                            <button
+                              className="adm-btn-danger"
+                              style={{padding:"7px 14px",fontSize:"12px"}}
+                              disabled={updatingOrder === o.id}
+                              onClick={() => deleteOrder(o)}
+                            >🗑 Delete</button>
+                          </td>
                         </tr>
                         {expandedOrder === o.id && (
                           <tr className="adm-order-detail">
-                            <td colSpan={6}>
+                            <td colSpan={7}>
                               <div className="adm-order-detail-grid">
                                 <div>
                                   <div className="adm-order-detail-title">Customer</div>
@@ -779,10 +822,6 @@ function AdminPage({ setPage, user, setUser, authChecked }) {
                   <div className="adm-field">
                     <label className="adm-field-label">Price (PKR) *</label>
                     <input className="adm-input" placeholder="e.g. PKR 4,500" value={form.price} onChange={e=>setField("price",e.target.value)} />
-                  </div>
-                  <div className="adm-field">
-                    <label className="adm-field-label">Original Price (optional)</label>
-                    <input className="adm-input" placeholder="e.g. PKR 5,500 — shown crossed out" value={form.oldPrice} onChange={e=>setField("oldPrice",e.target.value)} />
                   </div>
                   <div className="adm-field">
                     <label className="adm-field-label">Manufacturing cost (PKR)</label>

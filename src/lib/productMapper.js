@@ -4,7 +4,7 @@
 
 // Only public-safe columns. manufacturing_cost is deliberately NOT here.
 export const PUBLIC_COLUMNS =
-  "id, name, brand, category, price, price_num, old_price, stock, description, weight, weight_unit, images, emoji, bg, badge, rating, reviews, purchases, views";
+  "id, name, brand, category, price, price_num, stock, description, weight, weight_unit, images, emoji, bg, badge, rating, reviews, purchases, views";
 
 // Card photos always sit on a neutral white background. Colour comes from a
 // per-product accent instead: a vivid outline and "+" button. The accent is
@@ -46,7 +46,6 @@ export function formatPKR(n) {
 
 export function mapRowToProduct(row) {
   const priceNum = Number(row.price_num) > 0 ? Number(row.price_num) : digitsToInt(row.price);
-  const oldNum = digitsToInt(row.old_price);
   const theme = colourThemeFor(row);
   return {
     id: row.id,
@@ -55,7 +54,6 @@ export function mapRowToProduct(row) {
     category: row.category,
     price: priceNum > 0 ? formatPKR(priceNum) : row.price,
     priceNum,
-    old: oldNum > 0 ? formatPKR(oldNum) : row.old_price,
     stock: row.stock,
     description: row.description,
     desc: row.description,

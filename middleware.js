@@ -38,7 +38,7 @@ function buildCsp() {
     // Product photos and the admin's shrunk-image previews come from the
     // Supabase storage bucket; blob:/data: cover the client-side image
     // compression preview in AdminPage.js before upload.
-    `img-src 'self' blob: data: https://*.supabase.co`,
+    `img-src 'self' blob: data: https://*.supabase.co https://images.unsplash.com`,
     `font-src 'self'`,
     // The Supabase client talks to your project over HTTPS (reads/writes)
     // and WSS (the realtime product subscription in StoreContext.js).

@@ -5034,3 +5034,148 @@ input:focus-visible, textarea:focus-visible, select:focus-visible { outline-offs
   background: var(--home-primary) !important;
   box-shadow: 0 0 0 3px #fff, 0 6px 14px rgba(0,0,0,0.15);
 }
+
+/* ============================================================
+   CLOUD HERO + CLOSING FEATURE  (CloudHero.js / ClosingFeature.js)
+   ============================================================ */
+.cloud-hero {
+  position: relative; overflow: hidden; isolation: isolate;
+  min-height: min(100vh, 860px);
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  padding: 90px 5vw 130px; text-align: center; background: #fff;
+}
+.cloud-hero-bg {
+  position: absolute; inset: 0; z-index: -3;
+  background-size: cover; background-position: center 40%;
+  transform: scale(1.04);
+}
+.cloud-hero-wash {
+  position: absolute; inset: 0; z-index: -2;
+  background:
+    radial-gradient(ellipse at 50% 40%, rgba(255,214,231,0.28), transparent 60%),
+    linear-gradient(180deg, rgba(88,52,110,0.38) 0%, rgba(201,116,143,0.22) 55%, rgba(255,248,240,0.0) 100%);
+}
+.cloud-hero-tag {
+  display: inline-flex; align-items: center; gap: 8px; margin-bottom: 18px;
+  background: rgba(255,255,255,0.18); border: 1px solid rgba(255,255,255,0.45);
+  backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+  border-radius: 100px; padding: 7px 18px; color: #fff;
+  font-size: 11px; font-weight: 600; letter-spacing: 3px; text-transform: uppercase;
+  animation: slideIn 0.8s ease both;
+}
+.cloud-hero-title { position: relative; z-index: 1; margin: 0; line-height: 0.86; color: #fff; }
+.ch-line { display: block; font-family: var(--font-bebas), sans-serif; font-weight: 400;
+  letter-spacing: 2px; text-shadow: 0 6px 40px rgba(88,52,110,0.35); }
+.ch-l1 { font-size: clamp(76px, 17vw, 250px); }
+.ch-l2 { display: flex; align-items: baseline; justify-content: center; gap: 0.12em;
+  font-size: clamp(76px, 17vw, 250px); }
+.ch-gentle {
+  font-family: var(--font-playfair), serif; font-style: italic; font-weight: 500;
+  font-size: 0.86em; letter-spacing: -2px; text-transform: none;
+  background: linear-gradient(180deg, #fff 10%, #FFD6E7 60%, #FF8FA3 120%);
+  -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+}
+
+/* CSS rose-gold bottle (sits IN FRONT of the letters, like the reference) */
+.cloud-bottle {
+  position: absolute; z-index: 2; left: 50%; top: 47%;
+  width: clamp(78px, 10vw, 138px); aspect-ratio: 1 / 3.15;
+  transform: translate(-50%, -50%) rotate(7deg);
+  animation: bottleFloat 6.5s ease-in-out infinite;
+  filter: drop-shadow(0 30px 40px rgba(88,52,110,0.45));
+}
+.cb-cap  { height: 20%; width: 74%; margin: 0 auto; border-radius: 8px 8px 3px 3px;
+  background: linear-gradient(90deg,#b9776f,#f4c3b7 32%,#fff0e8 50%,#d99a8f 72%,#9b5a58); }
+.cb-neck { height: 4%; width: 60%; margin: 0 auto; background: linear-gradient(90deg,#8e5655,#e8b4a8,#8e5655); }
+.cb-body { position: relative; height: 76%; border-radius: 14px 14px 10px 10px; overflow: hidden;
+  background: linear-gradient(90deg,#b36f6c 0%,#f2c1b5 26%,#fff2eb 46%,#e3a396 68%,#a15c5b 100%); }
+.cb-shine { position: absolute; top: 0; bottom: 0; left: 18%; width: 10%;
+  background: linear-gradient(180deg,rgba(255,255,255,0.8),rgba(255,255,255,0.05)); filter: blur(3px); }
+.cb-label { position: absolute; left: 50%; top: 40%; transform: translateX(-50%); width: 62%;
+  display: flex; flex-direction: column; align-items: center; color: rgba(90,45,48,0.85);
+  font-family: var(--font-bebas), sans-serif; line-height: 1; }
+.cb-label b { font-size: clamp(22px, 3vw, 40px); font-weight: 400; }
+.cb-label span { font-size: clamp(9px, 1.1vw, 15px); letter-spacing: 3px; margin-top: 4px; }
+.cb-label small { font-family: var(--font-dmsans), sans-serif; font-size: clamp(5px, 0.6vw, 8px);
+  letter-spacing: 2px; margin-top: 6px; opacity: 0.75; }
+
+.cloud-bubble {
+  position: absolute; z-index: 1; border-radius: 50%; pointer-events: none;
+  background: radial-gradient(circle at 32% 28%, rgba(255,255,255,0.75), rgba(255,214,231,0.22) 38%, rgba(201,116,143,0.2) 70%, rgba(255,255,255,0.35) 100%);
+  border: 1px solid rgba(255,255,255,0.5);
+  box-shadow: inset 0 0 18px rgba(255,255,255,0.35), 0 10px 30px rgba(88,52,110,0.18);
+  animation: bubbleFloat 7s ease-in-out infinite;
+}
+.cloud-hero-foot { position: absolute; z-index: 3; left: 5vw; bottom: 44px; max-width: 380px; text-align: left; }
+.cloud-hero-sub { margin: 0 0 18px; color: #fff; font-size: 15px; font-weight: 300; line-height: 1.7;
+  text-shadow: 0 2px 16px rgba(88,52,110,0.5); }
+.cloud-hero-btns { display: flex; gap: 12px; flex-wrap: wrap; }
+.cloud-btn-glass {
+  padding: 16px 32px; border-radius: 100px; font-size: 14px; font-weight: 600; letter-spacing: 1px; cursor: pointer; color: #fff;
+  background: rgba(255,255,255,0.18); border: 1px solid rgba(255,255,255,0.55);
+  backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); transition: all .3s;
+}
+.cloud-btn-glass:hover { background: rgba(255,255,255,0.32); transform: translateY(-2px); }
+.cloud-hero-chips { position: absolute; z-index: 3; right: 5vw; bottom: 44px; display: flex; gap: 10px; }
+.cloud-chip {
+  min-width: 92px; padding: 12px 16px; border-radius: 18px; text-align: center; color: #fff;
+  background: rgba(255,255,255,0.18); border: 1px solid rgba(255,255,255,0.45);
+  backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+}
+.cloud-chip b { display: block; font-family: var(--font-bebas), sans-serif; font-weight: 400; font-size: 30px; letter-spacing: 1px; line-height: 1; }
+.cloud-chip span { font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase; opacity: .9; }
+
+@keyframes bottleFloat { 0%,100% { transform: translate(-50%,-50%) rotate(7deg); } 50% { transform: translate(-50%,-54%) rotate(5deg); } }
+@keyframes bubbleFloat { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-16px); } }
+
+/* ---- Closing feature ---- */
+.closing-feature { background: #fff; padding: 24px 4vw 36px; }
+.cf-panel {
+  position: relative; overflow: hidden; isolation: isolate; border-radius: 36px;
+  min-height: 560px; padding: 44px;
+  background: linear-gradient(135deg, #f1dcf5 0%, #f6c3d6 42%, #f4a9bf 100%);
+  display: grid; grid-template-columns: minmax(300px, 420px) 1fr; align-items: end; gap: 24px;
+}
+.cf-photo {
+  position: absolute; z-index: -1; right: 4%; top: 0; height: 100%; width: 58%;
+  object-fit: cover; object-position: 50% 40%;
+  mix-blend-mode: multiply; opacity: .92;
+  -webkit-mask-image: linear-gradient(90deg, transparent 0%, #000 22%, #000 78%, transparent 100%);
+  mask-image: linear-gradient(90deg, transparent 0%, #000 22%, #000 78%, transparent 100%);
+}
+.cf-glass {
+  position: relative; z-index: 2; padding: 26px; border-radius: 26px;
+  background: rgba(255,255,255,0.38); border: 1px solid rgba(255,255,255,0.6);
+  backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+  box-shadow: 0 20px 50px rgba(201,116,143,0.25);
+}
+.cf-cols { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 26px; }
+.cf-col-h { font-size: 10px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: rgba(26,10,10,0.5); margin-bottom: 10px; }
+.cf-link { display: block; background: none; border: none; padding: 3px 0; cursor: pointer; text-align: left;
+  font-family: inherit; font-size: 13px; color: var(--home-dark); transition: color .2s, transform .2s; }
+.cf-link:hover { color: var(--home-primary); transform: translateX(3px); }
+.cf-real-h { font-family: var(--font-playfair), serif; font-weight: 800; font-size: 26px; color: var(--home-dark); margin-bottom: 6px; }
+.cf-real p { margin: 0 0 16px; font-size: 13px; line-height: 1.6; color: rgba(26,10,10,0.65); }
+.cf-wordmark {
+  grid-column: 2; align-self: end; justify-self: end; z-index: 1; line-height: .8;
+  font-family: var(--font-bebas), sans-serif; font-weight: 400; letter-spacing: 6px;
+  font-size: clamp(90px, 17vw, 270px); color: rgba(255,255,255,0.95);
+  text-shadow: 0 8px 40px rgba(201,116,143,0.35);
+}
+.cf-credit { text-align: center; padding-top: 10px; font-size: 10px; letter-spacing: 1px; color: rgba(26,10,10,0.35); }
+
+@media (max-width: 860px) {
+  .cloud-hero { min-height: 92vh; padding: 80px 5vw 250px; }
+  .cloud-bottle { top: 42%; width: 74px; }
+  .cloud-hero-foot { left: 5vw; right: 5vw; bottom: 96px; max-width: none; text-align: center; }
+  .cloud-hero-btns { justify-content: center; }
+  .cloud-hero-chips { left: 5vw; right: 5vw; bottom: 24px; justify-content: center; }
+  .cloud-chip { min-width: 0; flex: 1; padding: 10px; }
+  .cf-panel { grid-template-columns: 1fr; padding: 22px; min-height: 0; padding-top: 260px; border-radius: 28px; }
+  .cf-photo { width: 100%; height: 300px; right: 0; }
+  .cf-wordmark { grid-column: 1; justify-self: center; font-size: clamp(80px, 26vw, 160px); }
+  .cf-cols { grid-template-columns: repeat(3, 1fr); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .cloud-bottle, .cloud-bubble { animation: none; }
+}
