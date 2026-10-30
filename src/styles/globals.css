@@ -5063,41 +5063,63 @@ input:focus-visible, textarea:focus-visible, select:focus-visible { outline-offs
   font-size: 11px; font-weight: 600; letter-spacing: 3px; text-transform: uppercase;
   animation: slideIn 0.8s ease both;
 }
-.cloud-hero-title { position: relative; z-index: 1; margin: 0; line-height: 0.86; color: #fff; }
-.ch-line { display: block; font-family: var(--font-bebas), sans-serif; font-weight: 400;
-  letter-spacing: 2px; text-shadow: 0 6px 40px rgba(88,52,110,0.35); }
-.ch-l1 { font-size: clamp(76px, 17vw, 250px); }
-.ch-l2 { display: flex; align-items: baseline; justify-content: center; gap: 0.12em;
-  font-size: clamp(76px, 17vw, 250px); }
-.ch-gentle {
-  font-family: var(--font-playfair), serif; font-style: italic; font-weight: 500;
-  font-size: 0.86em; letter-spacing: -2px; text-transform: none;
-  background: linear-gradient(180deg, #fff 10%, #FFD6E7 60%, #FF8FA3 120%);
+.cloud-hero-title { position: relative; z-index: 1; margin: 0; line-height: 1.04; color: #fff; }
+.ch-line { display: block; font-family: var(--font-playfair), serif; font-weight: 800;
+  letter-spacing: -1px; text-shadow: 0 6px 40px rgba(88,52,110,0.35); }
+.ch-skin  { font-size: clamp(56px, 11vw, 150px); }
+.ch-glowing {
+  font-size: clamp(56px, 11vw, 150px); font-style: italic; font-weight: 700;
+  background: linear-gradient(180deg, #ffb3c2 0%, #f6596c 90%);
+  -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+}
+.ch-ritual {
+  font-size: clamp(56px, 11vw, 150px);
+  background: linear-gradient(180deg, #5fd9b6 0%, #1ea886 90%);
   -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
 }
 
-/* CSS rose-gold bottle (sits IN FRONT of the letters, like the reference) */
+/* CSS brand bottles (sit IN FRONT of the letters, like the reference).
+   Each bottle's palette/tint arrives as CSS vars set inline from CloudHero.js. */
 .cloud-bottle {
   position: absolute; z-index: 2; left: 50%; top: 47%;
-  width: clamp(78px, 10vw, 138px); aspect-ratio: 1 / 3.15;
-  transform: translate(-50%, -50%) rotate(7deg);
-  animation: bottleFloat 6.5s ease-in-out infinite;
-  filter: drop-shadow(0 30px 40px rgba(88,52,110,0.45));
+  width: calc(clamp(66px, 8.5vw, 120px) * var(--bw, 1)); aspect-ratio: 1 / 3.15;
+  transform: translate(-50%, -50%) rotate(var(--br, 0deg));
+  animation: bottleFloat 7s ease-in-out infinite;
+  animation-delay: var(--bd, 0s);
+  filter: drop-shadow(0 26px 34px rgba(88,52,110,0.4));
 }
 .cb-cap  { height: 20%; width: 74%; margin: 0 auto; border-radius: 8px 8px 3px 3px;
-  background: linear-gradient(90deg,#b9776f,#f4c3b7 32%,#fff0e8 50%,#d99a8f 72%,#9b5a58); }
-.cb-neck { height: 4%; width: 60%; margin: 0 auto; background: linear-gradient(90deg,#8e5655,#e8b4a8,#8e5655); }
+  background: var(--cb-cap, linear-gradient(90deg,#b9776f,#f4c3b7 32%,#fff0e8 50%,#d99a8f 72%,#9b5a58)); }
+.cb-neck { height: 4%; width: 60%; margin: 0 auto; background: var(--cb-cap, linear-gradient(90deg,#8e5655,#e8b4a8,#8e5655));
+  filter: brightness(0.85); }
 .cb-body { position: relative; height: 76%; border-radius: 14px 14px 10px 10px; overflow: hidden;
-  background: linear-gradient(90deg,#b36f6c 0%,#f2c1b5 26%,#fff2eb 46%,#e3a396 68%,#a15c5b 100%); }
+  background: var(--cb-body, linear-gradient(90deg,#b36f6c 0%,#f2c1b5 26%,#fff2eb 46%,#e3a396 68%,#a15c5b 100%)); }
 .cb-shine { position: absolute; top: 0; bottom: 0; left: 18%; width: 10%;
   background: linear-gradient(180deg,rgba(255,255,255,0.8),rgba(255,255,255,0.05)); filter: blur(3px); }
-.cb-label { position: absolute; left: 50%; top: 40%; transform: translateX(-50%); width: 62%;
-  display: flex; flex-direction: column; align-items: center; color: rgba(90,45,48,0.85);
+.cb-label { position: absolute; left: 50%; top: 40%; transform: translateX(-50%); width: 76%;
+  display: flex; flex-direction: column; align-items: center; color: var(--cb-ink, rgba(90,45,48,0.85));
   font-family: var(--font-bebas), sans-serif; line-height: 1; }
-.cb-label b { font-size: clamp(22px, 3vw, 40px); font-weight: 400; }
-.cb-label span { font-size: clamp(9px, 1.1vw, 15px); letter-spacing: 3px; margin-top: 4px; }
-.cb-label small { font-family: var(--font-dmsans), sans-serif; font-size: clamp(5px, 0.6vw, 8px);
-  letter-spacing: 2px; margin-top: 6px; opacity: 0.75; }
+.cb-label b { font-size: calc(clamp(20px, 2.6vw, 36px) * var(--bw, 1)); font-weight: 400; }
+.cb-label span { font-size: calc(clamp(8px, 1vw, 13px) * var(--bw, 1)); letter-spacing: 2px; margin-top: 4px; }
+.cb-label small { font-family: var(--font-dmsans), sans-serif; font-size: calc(clamp(5px, 0.55vw, 7px) * var(--bw, 1));
+  letter-spacing: 1px; margin-top: 5px; opacity: 0.75; }
+
+/* Floating trust cards orbiting the headline (15K+ orders, 4.7 rating, ...) */
+.ch-float {
+  position: absolute; z-index: 4; padding: 10px 14px; border-radius: 16px; text-align: left;
+  background: rgba(255,255,255,0.92); box-shadow: 0 14px 34px rgba(88,52,110,0.28);
+  animation: floatCard 5.5s ease-in-out infinite;
+}
+.ch-float b { display: block; font-family: var(--font-dmsans), sans-serif; font-weight: 800;
+  font-size: 18px; color: #f6596c; line-height: 1.1; }
+.ch-float span { display: block; font-family: var(--font-dmsans), sans-serif; font-size: 9px; font-weight: 700;
+  letter-spacing: 1.6px; text-transform: uppercase; color: #8d7a86; margin-top: 2px; }
+.ch-float small { display: block; font-family: var(--font-dmsans), sans-serif; font-size: 10px;
+  color: #f5b301; letter-spacing: 2px; margin-top: 3px; }
+.ch-f1 { left: 7%;  top: 18%; }
+.ch-f2 { left: 80%; top: 16%; }
+.ch-f3 { left: 6%;  top: 62%; }
+.ch-f4 { left: 81%; top: 58%; }
 
 .cloud-bubble {
   position: absolute; z-index: 1; border-radius: 50%; pointer-events: none;
@@ -5116,16 +5138,12 @@ input:focus-visible, textarea:focus-visible, select:focus-visible { outline-offs
   backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); transition: all .3s;
 }
 .cloud-btn-glass:hover { background: rgba(255,255,255,0.32); transform: translateY(-2px); }
-.cloud-hero-chips { position: absolute; z-index: 3; right: 5vw; bottom: 44px; display: flex; gap: 10px; }
-.cloud-chip {
-  min-width: 92px; padding: 12px 16px; border-radius: 18px; text-align: center; color: #fff;
-  background: rgba(255,255,255,0.18); border: 1px solid rgba(255,255,255,0.45);
-  backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
-}
-.cloud-chip b { display: block; font-family: var(--font-bebas), sans-serif; font-weight: 400; font-size: 30px; letter-spacing: 1px; line-height: 1; }
-.cloud-chip span { font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase; opacity: .9; }
 
-@keyframes bottleFloat { 0%,100% { transform: translate(-50%,-50%) rotate(7deg); } 50% { transform: translate(-50%,-54%) rotate(5deg); } }
+@keyframes bottleFloat {
+  0%, 100% { transform: translate(-50%, -50%) rotate(var(--br, 0deg)); }
+  50%      { transform: translate(-50%, calc(-50% - 12px)) rotate(calc(var(--br, 0deg) * 0.5)); }
+}
+@keyframes floatCard { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
 @keyframes bubbleFloat { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-16px); } }
 
 /* ---- Closing feature ---- */
@@ -5152,7 +5170,7 @@ input:focus-visible, textarea:focus-visible, select:focus-visible { outline-offs
 .cf-cols { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 26px; }
 .cf-col-h { font-size: 10px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: rgba(26,10,10,0.5); margin-bottom: 10px; }
 .cf-link { display: block; background: none; border: none; padding: 3px 0; cursor: pointer; text-align: left;
-  font-family: inherit; font-size: 13px; color: var(--home-dark); transition: color .2s, transform .2s; }
+  text-decoration: none; font-family: inherit; font-size: 13px; color: var(--home-dark); transition: color .2s, transform .2s; }
 .cf-link:hover { color: var(--home-primary); transform: translateX(3px); }
 .cf-real-h { font-family: var(--font-playfair), serif; font-weight: 800; font-size: 26px; color: var(--home-dark); margin-bottom: 6px; }
 .cf-real p { margin: 0 0 16px; font-size: 13px; line-height: 1.6; color: rgba(26,10,10,0.65); }
@@ -5164,18 +5182,38 @@ input:focus-visible, textarea:focus-visible, select:focus-visible { outline-offs
 }
 .cf-credit { text-align: center; padding-top: 10px; font-size: 10px; letter-spacing: 1px; color: rgba(26,10,10,0.35); }
 
+/* ---- Footer (pink glass panel redesign, Footer.js) ---- */
+.site-footer { background: #fff; }
+.footer-legal-light {
+  display: flex; flex-wrap: wrap; gap: 8px 24px; justify-content: space-between; align-items: center;
+  padding: 20px 2vw 8px; font-size: 12.5px; color: rgba(26,10,10,0.5);
+}
+.footer-copy-light { letter-spacing: 0.3px; }
+.footer-legal-links { display: flex; gap: 22px; }
+.footer-legal-links .footer-link-a { color: rgba(26,10,10,0.55); }
+.footer-legal-links .footer-link-a:hover { color: #f6596c; }
+@media (max-width: 860px) {
+  .footer-legal-light { flex-direction: column; align-items: flex-start; gap: 10px; padding-top: 16px; }
+}
+
 @media (max-width: 860px) {
   .cloud-hero { min-height: 92vh; padding: 80px 5vw 250px; }
-  .cloud-bottle { top: 42%; width: 74px; }
+  .cloud-bottle { width: calc(clamp(44px, 9vw, 74px) * var(--bw, 1)); }
   .cloud-hero-foot { left: 5vw; right: 5vw; bottom: 96px; max-width: none; text-align: center; }
   .cloud-hero-btns { justify-content: center; }
-  .cloud-hero-chips { left: 5vw; right: 5vw; bottom: 24px; justify-content: center; }
-  .cloud-chip { min-width: 0; flex: 1; padding: 10px; }
+  .ch-float { padding: 7px 10px; }
+  .ch-float b { font-size: 14px; }
+  .ch-float span { font-size: 8px; }
+  .ch-float small { font-size: 8px; }
+  .ch-f1 { left: 3%;  top: 13%; }
+  .ch-f2 { left: auto; right: 3%; top: 12%; }
+  .ch-f3 { left: 3%;  top: 54%; }
+  .ch-f4 { left: auto; right: 3%; top: 50%; }
   .cf-panel { grid-template-columns: 1fr; padding: 22px; min-height: 0; padding-top: 260px; border-radius: 28px; }
   .cf-photo { width: 100%; height: 300px; right: 0; }
   .cf-wordmark { grid-column: 1; justify-self: center; font-size: clamp(80px, 26vw, 160px); }
   .cf-cols { grid-template-columns: repeat(3, 1fr); }
 }
 @media (prefers-reduced-motion: reduce) {
-  .cloud-bottle, .cloud-bubble { animation: none; }
+  .cloud-bottle, .cloud-bubble, .ch-float { animation: none; }
 }

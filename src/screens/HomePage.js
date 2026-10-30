@@ -2,7 +2,6 @@ import { Fragment, useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import NewsletterForm from "../components/NewsletterForm.js";
 import CloudHero from "../components/CloudHero.js";
-import ClosingFeature from "../components/ClosingFeature.js";
 
 /* ============================================================
    SHARED: Before/After comparison slider
@@ -446,7 +445,7 @@ function HomePage({ setPage, goToProducts, addToCart, toggleFavourite, isFav, op
       </div>
 
       {/* HERO */}
-      <CloudHero productCount={productCount} brandCount={brandCount} goToProducts={goToProducts} />
+      <CloudHero goToProducts={goToProducts} />
 
       {/* MARQUEE */}
       <div className="marquee-wrap">
@@ -572,9 +571,6 @@ function HomePage({ setPage, goToProducts, addToCart, toggleFavourite, isFav, op
         <p className="newsletter-sub">Get early access to launches & sales</p>
         <NewsletterForm />
       </section>
-
-      {/* CLOSING FEATURE */}
-      <ClosingFeature setPage={setPage} goToProducts={goToProducts} />
     </div>
   );
 }
