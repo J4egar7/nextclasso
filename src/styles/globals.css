@@ -5108,7 +5108,8 @@ input:focus-visible, textarea:focus-visible, select:focus-visible { outline-offs
 .ch-float {
   position: absolute; z-index: 4; padding: 10px 14px; border-radius: 16px; text-align: left;
   background: rgba(255,255,255,0.92); box-shadow: 0 14px 34px rgba(88,52,110,0.28);
-  animation: floatCard 5.5s ease-in-out infinite;
+  animation: floatCard 11s ease-in-out infinite;
+  will-change: transform;
 }
 .ch-float b { display: block; font-family: var(--font-dmsans), sans-serif; font-weight: 800;
   font-size: 18px; color: #f6596c; line-height: 1.1; }
@@ -5118,10 +5119,10 @@ input:focus-visible, textarea:focus-visible, select:focus-visible { outline-offs
   color: #f5b301; letter-spacing: 2px; margin-top: 3px; }
 /* Positions drawn on the mockup: pulled in from the edges so the cards hug
    the headline instead of framing the whole hero. */
-.ch-f1 { left: 25%; top: 20%; }
-.ch-f2 { left: 61%; top: 38%; }
-.ch-f3 { left: 28%; top: 54%; }
-.ch-f4 { left: 54%; top: 77%; }
+.ch-f1 { left: 25%; top: 20%; animation-duration: 11s; }
+.ch-f2 { left: 61%; top: 38%; animation-duration: 13.5s; }
+.ch-f3 { left: 28%; top: 54%; animation-duration: 10.5s; }
+.ch-f4 { left: 54%; top: 77%; animation-duration: 12.5s; }
 
 .cloud-bubble {
   position: absolute; z-index: 1; border-radius: 50%; pointer-events: none;
@@ -5141,9 +5142,25 @@ input:focus-visible, textarea:focus-visible, select:focus-visible { outline-offs
 }
 .cloud-btn-glass:hover { background: rgba(255,255,255,0.32); transform: translateY(-2px); }
 
-@keyframes bottleFloat { 0%,100% { transform: translate(-50%,-50%) rotate(6deg); } 50% { transform: translate(-50%,-54%) rotate(4.5deg); } }
-@keyframes floatCard { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
-@keyframes bubbleFloat { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-16px); } }
+/* Longer, two-axis paths so the cards drift rather than bob. Each card also
+   gets its own duration (below) so they never travel in lockstep. */
+@keyframes bottleFloat {
+  0%, 100% { transform: translate(-50%, -50%) rotate(6deg); }
+  35%      { transform: translate(-52.5%, -53.5%) rotate(4deg); }
+  70%      { transform: translate(-48%, -52%) rotate(7.5deg); }
+}
+@keyframes floatCard {
+  0%, 100% { transform: translate3d(0, 0, 0); }
+  22%      { transform: translate3d(16px, -18px, 0); }
+  48%      { transform: translate3d(-12px, -28px, 0); }
+  72%      { transform: translate3d(-20px, -10px, 0); }
+  88%      { transform: translate3d(6px, -16px, 0); }
+}
+@keyframes bubbleFloat {
+  0%, 100% { transform: translate3d(0, 0, 0); }
+  33%      { transform: translate3d(14px, -18px, 0); }
+  66%      { transform: translate3d(-12px, -8px, 0); }
+}
 
 /* ---- Closing feature ---- */
 .closing-feature { background: #fff; padding: 24px 4vw 36px; }
